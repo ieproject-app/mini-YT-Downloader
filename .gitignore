@@ -1,0 +1,13 @@
+# Unduhan user & artefak besar (jangan pernah masuk git)
+downloads/
+_engine/bin/
+__pycache__/
+*.pyc
+*.part
+*.ytdl
+*.tmp
+
+# Konfigurasi lokal mesin-spesifik & state agen
+_engine/config.json
+.zcode/
+logs/
