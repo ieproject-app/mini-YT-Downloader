@@ -6,16 +6,20 @@ import zipfile
 import urllib.request
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-ENGINE_DIR = Path(__file__).resolve().parent.parent
-BIN_DIR = ENGINE_DIR / "bin"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import paths
+import i18n
+from i18n import t
+
+BIN_DIR = paths.bin_dir()
 FFMPEG_EXE = BIN_DIR / "ffmpeg.exe"
 FFPROBE_EXE = BIN_DIR / "ffprobe.exe"
 
 FFMPEG_WINDOWS_URL = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"
 
 def is_ffmpeg_available():
-    # 1. Check internal _engine/bin/
+    # 1. Check internal bin dir
     if FFMPEG_EXE.exists():
         return str(BIN_DIR)
     # 2. Check system PATH
@@ -24,22 +28,24 @@ def is_ffmpeg_available():
     return None
 
 def download_and_extract_ffmpeg():
-    print("\n[!] FFmpeg tidak terdeteksi di sistem atau folder internal.")
-    print("[*] Memulai auto-download FFmpeg portable (~90MB)... Mohon tunggu...")
+    print(t("pf.ffmpeg_missing"))
+    print(t("pf.ffmpeg_downloading"))
     BIN_DIR.mkdir(parents=True, exist_ok=True)
     zip_path = BIN_DIR / "ffmpeg_temp.zip"
-    
+
     try:
         def reporthook(blocknum, blocksize, totalsize):
             read = blocknum * blocksize
             if totalsize > 0:
                 percent = min(100, read * 100 // totalsize)
-                sys.stdout.write(f"\r -> Mengunduh FFmpeg: {percent}% [{read//(1024*1024)}MB / {totalsize//(1024*1024)}MB]")
+                sys.stdout.write(t("pf.ffmpeg_progress",
+                                   pct=percent, read=read // (1024 * 1024),
+                                   total=totalsize // (1024 * 1024)))
                 sys.stdout.flush()
 
         urllib.request.urlretrieve(FFMPEG_WINDOWS_URL, zip_path, reporthook)
-        print("\n[*] Mengekstrak FFmpeg binary ke folder internal...")
-        
+        print(t("pf.ffmpeg_extracting"))
+
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             for file_info in zip_ref.infolist():
                 if file_info.filename.endswith("ffmpeg.exe"):
@@ -51,19 +57,19 @@ def download_and_extract_ffmpeg():
 
         if zip_path.exists():
             os.remove(zip_path)
-            
-        print("[✓] FFmpeg berhasil dipasang secara portabel!")
+
+        print(t("pf.ffmpeg_done"))
         return str(BIN_DIR)
     except Exception as e:
-        print(f"\n[X] Gagal mendownload/mengekstrak FFmpeg: {e}")
+        print(t("pf.ffmpeg_failed", err=e))
         return None
 
 def ensure_dependencies():
-    if sys.version_info < (3, 8):
-        print(f"[X] Versi Python terlalu lama: {sys.version}. Butuh Python >= 3.8")
+    if sys.version_info < (3, 9):
+        print(t("pf.python_old", ver=sys.version))
         sys.exit(1)
 
-    required = ["yt_dlp", "rich", "InquirerPy"]
+    required = ["yt_dlp", "rich", "requests"]
     missing = []
     for pkg in required:
         try:
@@ -72,10 +78,10 @@ def ensure_dependencies():
             missing.append(pkg)
 
     if missing:
-        print(f"[*] Menginstall paket Python yang dibutuhkan ({', '.join(missing)})...")
-        req_file = BASE_DIR / "requirements.txt"
+        print(t("pf.pip_installing", pkgs=", ".join(missing)))
+        req_file = paths.requirements_file()
         subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", str(req_file)])
-        print("[✓] Paket dependensi berhasil dipasang!")
+        print(t("pf.pip_done"))
 
     ffmpeg_status = is_ffmpeg_available()
     if not ffmpeg_status:

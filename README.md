@@ -1,100 +1,124 @@
-﻿# ⚡ Mini YouTube Downloader (v1.2.0)
+﻿# ⚡ Mini YouTube Downloader (v1.3.0)
 
-Aplikasi downloader YouTube & konverter audio mandiri, super ringan, dan ramah pemula untuk Windows.  
+A standalone, super-lightweight YouTube downloader & audio converter for Windows — friendly for beginners.
 *Crafted with ❤️ by [SnipGeek](https://snipgeek.com/)*
 
+🌐 **Bahasa Indonesia: [README.id.md](README.id.md)**
+
 ---
 
-## 🚀 Cara Menggunakan (Hanya 1 Langkah!)
+## 🚀 Install (Online, One Command)
 
-Cukup **klik ganda (double-click)** pada file:
-```text
-⚡ run.bat
+Open **PowerShell** and run:
+
+```powershell
+irm https://raw.githubusercontent.com/ieproject-app/mini-YT-Downloader/main/install.ps1 | iex
 ```
 
-> **Catatan Pengguna Baru**:
-> - Pastikan laptop sudah terinstall **Python 3.8+** (dengan centang *"Add Python to PATH"*).
-> - Seluruh dependensi dan engine konverter audio (FFmpeg) akan dipasang otomatis saat pertama kali dibuka!
+The installer will:
+1. Check/install Python prerequisites
+2. Download the app to `%LOCALAPPDATA%\MiniYT\app`
+3. Create an isolated Python environment + install dependencies
+4. Register the **`miniyt`** command (available in any terminal)
+
+Then just type anywhere:
+
+```text
+miniyt
+```
+
+> Prefer the classic way? Download the repo and double-click **`run.bat`**
+> (portable mode — all data stays inside the repo folder).
+
+> **New user notes**:
+> - Python **3.9+** must be installed with *"Add Python to PATH"* checked.
+> - FFmpeg (~90MB) is downloaded automatically on first run.
 
 ---
 
-## 🔑 Gemini API Key (Opsional)
+## 🔑 Gemini API Key (Optional)
 
-Fitur **✂️ Potong per Surah/Chapter (murottal Juz Amma)** memakai AI
-[Google Gemini](https://deepmind.google/technologies/gemini/) untuk
-mendeteksi batas surah — baik verifikasi surah yang "hilang timestamp" pada
-video ber-chapter, maupun deteksi **penuh dari audio** untuk video murottal
-tanpa chapter.
+The **✂️ Cut per Surah/Chapter (Juz murottal)** feature uses
+[Google Gemini](https://deepmind.google/technologies/gemini/) to detect surah
+boundaries — both for verifying "missing timestamp" surahs in chaptered
+videos, and for **fully detecting surahs from the audio** in chapter-less
+murottal videos.
 
-**Tanpa API key, aplikasi tetap 100% normal** — semua fitur unduh
-video/audio/playlist jalan seperti biasa. Key **hanya** dipakai saat Anda
-memilih opsi potong per surah.
+**Without an API key the app still works 100% normally** — all
+video/audio/playlist downloads behave as usual. The key is **only** used when
+you choose the per-surah cut option.
 
-### Cara mendapatkan API key (gratis, free tier)
-1. Buka **https://aistudio.google.com/apikey** dan login dengan akun Google Anda.
-2. Klik **“Create API key”** → pilih project (atau biarkan default) → key akan muncul.
-3. Klik **Copy** untuk menyalin key (formatnya mirip `AIzaSy...`).
+### Getting a free API key
+1. Open **https://aistudio.google.com/apikey** and sign in with your Google account.
+2. Click **"Create API key"** → pick a project (or keep the default) → the key appears.
+3. Click **Copy** (it looks like `AIzaSy...`).
 
-### Cara memasukkan key ke aplikasi
-**Lewat menu (paling mudah):**
-1. Jalankan `run.bat` — saat pertama kali dibuka, aplikasi menawarkan memasang key.
-2. Atau ketik `S` (Settings) → pilih menu **[6] Gemini API Key** → pilih [1] Paste key, [2] buka halaman key, atau [3] buka tutorial blog.
-3. Status berubah menjadi *"1 key aktif"* di baris status.
+### Adding the key to the app
+**Via the menu (easiest):**
+1. Run `miniyt` (or `run.bat`).
+2. On first launch the app offers to set the key — or type `S` (Settings) →
+   **[6] Gemini API Key** → [1] Paste key. You can also pick [2] to open the
+   key page or [3] to open the illustrated blog tutorial.
+3. The status bar shows *"1 key(s) active"* once set.
 
-> 📖 **Panduan bergambar langkah demi langkah** tersedia di blog SnipGeek:
-> [https://snipgeek.com/](https://snipgeek.com/) *(tautan artikel tutorial API key)*
-
-**Manual (opsional):** salin file `.env.example` menjadi `.env` di folder yang
-sama, lalu isi:
+**Manual (optional):** copy `.env.example` to `.env` next to the app and fill in:
 ```dotenv
 GEMINI_API_KEYS=AIzaSy...
 ```
-Anda boleh mengisi lebih dari satu key (dipisah koma) — aplikasi memakai
-round-robin untuk menghindari batas kuota free tier.
+You can add several keys separated by commas — the app rotates them
+round-robin to stay within free-tier quotas.
 
-### ⚠️ Privasi & keamanan
-- Key disimpan **lokal** di file `.env` di folder project — **tidak pernah
-  di-upload**, tidak dikirim ke server lain (selain request langsung ke API
-  Google Gemini), dan **tidak ikut ter-commit ke GitHub** (sudah diabaikan
-  `.gitignore`).
-- Jangan pernah membagikan key Anda ke orang lain.
-- Kuota free tier Google bersifat harian & per-key. Bila muncul pesan
-  *quota exceeded*, tambahkan key baru atau tunggu keesokan harinya.
-
----
-
-## 📁 Lokasi Hasil Unduhan
-
-Hasil unduhan Anda akan otomatis dipisahkan secara rapi di dalam folder `downloads/`:
-- 🎬 **Video (MP4 4K / 1080p / 720p)** ➔ Masuk ke `downloads/video/`
-- 🎵 **Audio (MP3 320k / M4A / FLAC)** ➔ Masuk ke `downloads/audio/`
-- 📃 **Playlist** ➔ Paste URL playlist, semua item tersimpan dalam subfolder sesuai nama playlist (contoh: `downloads/audio/Nama Playlist/01 - Lagu.mp3`). Khusus playlist berisi >20 item, muncul konfirmasi dulu. Item yang gagal otomatis dicoba ulang dengan 3 strategi: jalur normal ➔ client alternatif ➔ format cadangan (kualitas lebih rendah).
+### 🔒 Privacy & security
+- Keys are stored **locally** in a `.env` file — **never uploaded**, never
+  committed to GitHub (git-ignored), and only ever sent directly to the Google
+  Gemini API.
+- Never share your key with anyone.
+- Google free-tier quotas are daily and per-key. If you see *quota exceeded*,
+  add another key or wait for the next day.
 
 ---
 
-## ✨ Fitur Unggulan
+## 📁 Where Files Are Saved
 
-1. **Download Playlist 📃**: Paste URL playlist, semua item otomatis diunduh ke subfolder sesuai nama playlist (MP3/M4A/FLAC/WAV/MP4).
-2. **Kualitas Audio Maksimal (MP3 320 kbps)**: Dilengkapi Cover Art Thumbnail dan ID3 Metadata otomatis.
-3. **Folder Management**: Menu 1-klik untuk langsung membuka folder file di Windows Explorer.
-4. **Bypass Proteksi YouTube**: Ekstraksi metadata instan anti-lag & anti-bot check.
-5. **Potong per Chapter/Surah ✂️ (v1.1.0 + auto-detect)**: Video murottal Juz (ber-chapter ATAU tanpa chapter) bisa langsung dipotong jadi **file MP3 per surah**. Butuh **Gemini API key** (opsional, free tier — lihat [🔑 Gemini API Key](#-gemini-api-key-opsional)). Ada 2 jalur:
-   - **Ber-chapter**: deteksi chapter dari metadata, verifikasi surah yang "hilang timestamp" via Gemini, skip Opening, output rapi `downloads/audio/<Judul>/NN - Surah X.mp3`.
-   - **Tanpa chapter** (bila judul/channel mengarah ke murottal Juz): transkripsi word-level via Gemini (`gemini-3.5-transcribe`) lalu petakan kata→batas surah secara presisi, fallback ke sweep audio per-chunk. File sumber mentah otomatis dihapus setelah dipotong.
+Downloads are neatly separated inside the downloads folder:
+- 🎬 **Video (MP4 4K / 1080p / 720p)** → `video/`
+- 🎵 **Audio (MP3 320k / M4A / FLAC)** → `audio/`
+- 📃 **Playlist** → paste a playlist URL and every item goes into a subfolder
+  named after the playlist (e.g. `audio/My Playlist/01 - Song.mp3`). Playlists
+  with >20 items ask for confirmation first. Failed items are retried
+  automatically with 3 strategies: normal route → alternate client →
+  fallback format (lower quality).
 
----
-
-## 🔁 Versi & Rollback
-
-Proyek ini menggunakan Git dengan tag versi sebagai titik aman:
-
-- Lihat riwayat commit: `git log --oneline`
-- Kembali ke versi stabil terakhir: `git checkout v1.0.0`
-- Batalkan commit terakhir: `git revert HEAD`
-- Lihat status file berubah: `git status`
+Default locations:
+- Installed mode: `%USERPROFILE%\Downloads\MiniYT`
+- Portable mode: `<repo>\downloads`
 
 ---
 
-## 🌐 Tentang Pengembang
-Temukan berbagai tools produktivitas, template, dan artikel teknologi lainnya di:  
+## ✨ Features
+
+1. **Playlist Download 📃**: paste a playlist URL — every item downloads into its own subfolder (MP3/M4A/FLAC/WAV/MP4).
+2. **Max Audio Quality (MP3 320 kbps)**: automatic Cover Art & ID3 metadata.
+3. **Folder Management**: one-click menu to open folders in Windows Explorer.
+4. **YouTube Protection Bypass**: instant metadata extraction, anti-lag & anti-bot.
+5. **Cut per Chapter/Surah ✂️**: murottal Juz videos (with OR without chapters) can be split into **one MP3 per surah**. Requires a Gemini API key (free tier — see above). Two routes:
+   - **Chaptered**: chapters come from metadata; surahs "missing a timestamp" are verified via Gemini; Opening is skipped; tidy output `NN - Surah X.mp3`.
+   - **Chapter-less**: word-level transcription (`gemini-3.5-transcribe`) maps recitation words to precise surah boundaries (all 37 Juz Amma surahs verified in testing); falls back to a per-chunk audio sweep. The raw source file is deleted automatically after cutting.
+6. **Bilingual UI 🌐**: English & Bahasa Indonesia — asked once at first run, changeable anytime in Settings.
+
+---
+
+## 🔁 Versions & Rollback
+
+The project uses Git tags as safe rollback points:
+
+- See commit history: `git log --oneline`
+- Roll back to the last stable version: `git checkout v1.2.1`
+- Undo the last commit: `git revert HEAD`
+- See changed files: `git status`
+
+---
+
+## 🌐 About the Developer
+Find productivity tools, templates, and tech articles at:
 🔗 **[https://snipgeek.com/](https://snipgeek.com/)**

@@ -6,6 +6,9 @@ import yt_dlp
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn, TransferSpeedColumn, DownloadColumn
 
+import i18n
+from i18n import t
+
 _console = Console(force_terminal=True, legacy_windows=False)
 
 # yt-dlp embeds raw ANSI color codes in error strings; strip them for clean display
@@ -244,8 +247,8 @@ class YTDownloader:
         # Retry ladder: normal → alternate client → progressive fallback format.
         # Each tuple is (kwargs, message shown when THIS strategy fails).
         strategies = [
-            ({}, "koneksi terputus, mencoba ulang via jalur alternatif..."),
-            ({'fallback_client': True}, "masih gagal, mencoba format cadangan (kualitas lebih rendah)..."),
+            ({}, t("dl.retry_alternate")),
+            ({'fallback_client': True}, t("dl.retry_fallback")),
             ({'format_fallback': True}, None),
         ]
 
@@ -269,15 +272,15 @@ class YTDownloader:
                     last_err = ANSI_RE.sub('', str(e))
                     if fail_msg:
                         self._clear_partial_files(target_dir, f"{self.sanitize_title(numbered_title)} [")
-                        _console.print(f"[yellow]  ↻ {i:02d}/{total}[/yellow] {entry_title} [dim]— {fail_msg}[/dim]")
+                        _console.print(t("dl.retry_item", i=i, total=total, title=entry_title, msg=fail_msg))
                         time.sleep(3)
 
             if out_file:
                 success_files.append(out_file)
-                _console.print(f"[bold green]  ✓ {i:02d}/{total}[/bold green] {entry_title}")
+                _console.print(t("dl.item_ok", i=i, total=total, title=entry_title))
             else:
                 failed_list.append((entry_title, last_err))
-                _console.print(f"[bold red]  ✗ {i:02d}/{total}[/bold red] {entry_title} [dim]— {last_err}[/dim]")
+                _console.print(t("dl.item_fail", i=i, total=total, title=entry_title, err=last_err))
 
         return success_files, failed_list, target_dir
 
@@ -288,8 +291,8 @@ class YTDownloader:
         Returns (out_file, target_dir); raises the last error when all fail.
         """
         strategies = [
-            ({}, "mencoba ulang via jalur alternatif..."),
-            ({'fallback_client': True}, "mencoba format cadangan (kualitas lebih rendah)..."),
+            ({}, t("dl.retry_alternate")),
+            ({'fallback_client': True}, t("dl.retry_fallback")),
             ({'format_fallback': True}, None),
         ]
         last_err = None
@@ -303,7 +306,7 @@ class YTDownloader:
             except Exception as e:
                 last_err = e
                 if fail_msg:
-                    _console.print(f"[yellow]↻[/yellow] {fail_msg}")
+                    _console.print(t("dl.retry_line", msg=fail_msg))
                     time.sleep(3)
         raise last_err
 
@@ -397,12 +400,12 @@ class YTDownloader:
                 total = d.get('total_bytes') or d.get('total_bytes_estimate') or 0
                 downloaded = d.get('downloaded_bytes', 0)
                 if task_id is None:
-                    task_id = progress.add_task("[bold yellow]Downloading...", total=total)
+                    task_id = progress.add_task(t("dl.downloading"), total=total)
                 else:
                     progress.update(task_id, completed=downloaded, total=total)
             elif d['status'] == 'finished':
                 if task_id is not None:
-                    progress.update(task_id, description="[bold green]Processing & Converting...")
+                    progress.update(task_id, description=t("dl.processing"))
 
         ydl_opts = self._get_base_opts(fallback_client=fallback_client)
         ydl_opts.update({

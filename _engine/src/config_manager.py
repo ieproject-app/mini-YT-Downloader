@@ -1,15 +1,17 @@
 ﻿import os
+import sys
 import json
 import subprocess
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-ENGINE_DIR = Path(__file__).resolve().parent.parent
-DEFAULT_ROOT_DOWNLOAD_DIR = str(BASE_DIR / "downloads")
+import paths
+
+ENGINE_DIR = paths.ENGINE_DIR
+DEFAULT_ROOT_DOWNLOAD_DIR = str(paths.default_downloads_dir())
 
 class ConfigManager:
     def __init__(self, config_file="config.json"):
-        self.config_path = ENGINE_DIR / config_file
+        self.config_path = paths.config_path()
         self.defaults = {
             "root_download_dir": DEFAULT_ROOT_DOWNLOAD_DIR,
             "last_resolution": "1080p",
@@ -24,6 +26,9 @@ class ConfigManager:
             "gemini_trace": True,
             # Onboarding Gemini key sudah pernah ditawarkan?
             "gemini_key_prompted": False,
+            # Bahasa UI: "auto" | "id" | "en"
+            "language": "auto",
+            "language_prompted": False,
         }
         self.config = self.load()
 
@@ -37,8 +42,8 @@ class ConfigManager:
                 for k, v in self.defaults.items():
                     if k not in data:
                         data[k] = v
-                # Normalize root download dir
-                if "Users" in data.get("root_download_dir", "") and "mini-YT-Downloader" not in data.get("root_download_dir", ""):
+                # Normalisasi root download dir kosong/tak valid
+                if not str(data.get("root_download_dir", "")).strip():
                     data["root_download_dir"] = DEFAULT_ROOT_DOWNLOAD_DIR
                     self.save(data)
                 return data
@@ -88,9 +93,14 @@ class ConfigManager:
         return str(sub)
 
     def open_download_folder(self, target_folder=None):
-        """Open download folder in Windows Explorer"""
+        """Open download folder in OS file manager (Windows Explorer / Finder / xdg-open)."""
         folder = target_folder or self.get_root_download_dir()
         try:
-            os.startfile(folder)
+            if os.name == "nt":
+                os.startfile(folder)
+            elif sys.platform == "darwin":
+                subprocess.Popen(["open", folder])
+            else:
+                subprocess.Popen(["xdg-open", folder])
         except Exception:
             subprocess.Popen(f'explorer "{folder}"', shell=True)

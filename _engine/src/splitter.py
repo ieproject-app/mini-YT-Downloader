@@ -30,18 +30,18 @@ try:
 except ImportError:  # pragma: no cover
     requests = None
 
+import paths
+import i18n
+from i18n import t
+
 GEN_BASE = "https://generativelanguage.googleapis.com/v1beta"
 INTERACTIONS_URL = f"{GEN_BASE}/interactions"
 
 # ─── Lokasi ffmpeg ────────────────────────────────────────────────────────────
 
-ENGINE_DIR = Path(__file__).resolve().parent.parent
-BIN_DIR = ENGINE_DIR / "bin"
-
-
 def resolve_ffmpeg():
-    """ffmpeg bundled di _engine/bin lebih dulu, fallback ke PATH."""
-    exe = BIN_DIR / "ffmpeg.exe"
+    """ffmpeg bundled (bin dir via paths) lebih dulu, fallback ke PATH."""
+    exe = paths.bin_dir() / "ffmpeg.exe"
     if exe.exists():
         return str(exe)
     found = shutil.which("ffmpeg")
@@ -206,11 +206,12 @@ def find_env_file_keys():
     if raw:
         return [k.strip() for k in raw.split(",") if k.strip()]
 
-    repo_root = ENGINE_DIR.parent  # mini-YT-Downloader/
+    # Urutan: .env utama (paths) -> legacy portable locations -> sibling clipforge
     candidates = [
-        repo_root / ".env",
-        ENGINE_DIR / ".env",
-        repo_root.parent / "clipforge" / ".env",  # opsi (b)
+        paths.env_file(),
+        paths.ENGINE_DIR.parent / ".env",   # legacy portable (repo root)
+        paths.ENGINE_DIR / ".env",          # legacy portable (_engine/)
+        paths.REPO_ROOT.parent / "clipforge" / ".env",  # opsi (b) mesin owner
         Path.cwd() / ".env",
     ]
     seen = set()
@@ -228,8 +229,8 @@ def find_env_file_keys():
 
 
 def _repo_env_path():
-    """Lokasi .env utama milik mini-YT (repo root) — dibuat bila belum ada."""
-    return ENGINE_DIR.parent / ".env"
+    """Lokasi .env utama tempat key disimpan (dari paths)."""
+    return paths.env_file()
 
 
 def save_gemini_keys_to_env(keys_text):
@@ -263,10 +264,10 @@ def gemini_key_status():
     """Status ringkas untuk UI: jumlah key + petunjuk bila belum diatur."""
     keys = find_env_file_keys()
     if not keys:
-        return "[dim]belum diatur (opsional — untuk fitur potong per surah)[/dim]"
+        return t("key.status_missing")
     n = len(keys)
     preview = ", ".join(f"…{k[-4:]}" for k in keys[:2])
-    label = f"[bold green]{n} key aktif[/bold green]"
+    label = t("key.status_active", n=n)
     if n > 2:
         label += f" ({preview}, …)"
     elif keys:
