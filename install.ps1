@@ -7,6 +7,9 @@
 
 $ErrorActionPreference = "Stop"
 
+# PowerShell 5.1 defaults to TLS 1.0/1.1 which GitHub rejects
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+
 $Repo     = "https://github.com/ieproject-app/mini-YT-Downloader"
 $ZipUrl   = "$Repo/archive/refs/heads/main.zip"
 $InstallRoot = Join-Path $env:LOCALAPPDATA "MiniYT"
@@ -87,8 +90,11 @@ Write-Host ""
 Write-Host "  NOTE: close & reopen your terminal so 'miniyt' is recognized." -ForegroundColor Yellow
 Write-Host ""
 
-# Try to open the app right away (optional convenience)
-$answer = Read-Host "Launch miniyt now? (Y/n)"
-if ($answer -notmatch "^[nN]") {
-    & python $AppDir\_engine\src\app.py
+# Try to open the app right away (optional convenience; skipped when
+# MINIYT_SKIP_LAUNCH=1 e.g. for automated tests)
+if (-not $env:MINIYT_SKIP_LAUNCH) {
+    $answer = Read-Host "Launch miniyt now? (Y/n)"
+    if ($answer -notmatch "^[nN]") {
+        & python $AppDir\_engine\src\app.py
+    }
 }
