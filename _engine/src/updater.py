@@ -101,16 +101,26 @@ def spawn_installer_update():
     """Jalankan installer resmi terbaru secara detached (Windows).
 
     App harus keluar setelah memanggil ini (file lama digantikan installer).
+    Strategi: tulis updater.ps1 ke data dir (hindari nested-quoting cmd),
+    lalu spawn powershell -File secara detached.
     """
     if os.name != "nt":
         return False
-    inner = f"irm {INSTALLER_URL} | iex"
-    cmd = (
-        "set MINIYT_SKIP_LAUNCH=1&& "
-        f'powershell -NoProfile -ExecutionPolicy Bypass -Command "{inner}"'
+    data_dir = paths.data_dir()
+    updater_ps1 = data_dir / "updater.ps1"
+    updater_ps1.write_text(
+        "$env:MINIYT_SKIP_LAUNCH = '1'\n"
+        f"$src = '{INSTALLER_URL}'\n"
+        "$tmp = Join-Path $env:TEMP 'miniyt-install.ps1'\n"
+        "Invoke-WebRequest -Uri $src -OutFile $tmp -UseBasicParsing\n"
+        "& $tmp\n",
+        encoding="utf-8",
     )
     subprocess.Popen(
-        ["cmd", "/c", cmd],
+        [
+            "powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
+            "-File", str(updater_ps1),
+        ],
         creationflags=_CREATE_NO_WINDOW,
         close_fds=True,
     )
