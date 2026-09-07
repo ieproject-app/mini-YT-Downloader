@@ -17,7 +17,11 @@ class ConfigManager:
             "audio_format": "mp3",
             "download_count": 0,
             "remember_choice": True,
-            "cookies_browser": ""
+            "cookies_browser": "",
+            # Fitur potong per chapter/surah (MP3)
+            "cut_bitrate": 320,
+            "skip_opening": True,
+            "gemini_trace": True,
         }
         self.config = self.load()
 

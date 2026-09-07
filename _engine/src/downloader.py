@@ -276,6 +276,50 @@ class YTDownloader:
                     time.sleep(3)
         raise last_err
 
+    def download_audio_raw(self, url, title=None, video_id=None, subfolder=None,
+                           fallback_client=False):
+        """Download stream audio MENTAH (bestaudio, tanpa konversi) untuk dipotong.
+
+        Dipakai oleh fitur 'potong per surah': cukup unduh audio sekali (m4a/opus),
+        lalu ffmpeg memotong per chapter → MP3. Menghindari unduh video 73 menit
+        yang hanya butuh audio.
+
+        Returns (out_file, info, target_dir).
+        """
+        clean_url = sanitize_youtube_url(url)
+        target_dir = self.cfg.get_target_dir(is_audio=True, subfolder=subfolder)
+
+        dir_for_tmpl = target_dir.replace("%", "%%")
+        if title is not None:
+            clean_title = self.sanitize_title(title)
+            id_token = video_id if video_id else '%(id)s'
+            outtmpl = os.path.join(dir_for_tmpl, f"{clean_title.replace('%', '%%')} [{id_token}].%(ext)s")
+        else:
+            outtmpl = os.path.join(dir_for_tmpl, '%(title)s [%(id)s].%(ext)s')
+
+        ydl_opts = self._get_base_opts(fallback_client=fallback_client)
+        ydl_opts.update({
+            'outtmpl': outtmpl,
+            'format': 'bestaudio/best',
+            # Tanpa postprocessor: hasil tetap .m4a/.opus/.webm sesuai stream asli
+            'postprocessors': [],
+        })
+
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(clean_url, download=True)
+            downloaded_file = ydl.prepare_filename(info)
+
+        # bestaudio bisa ber-extensi .m4a/.opus/.webm; samakan dengan file nyata
+        if not os.path.exists(downloaded_file):
+            base_no_ext = os.path.splitext(downloaded_file)[0]
+            matches = [f for f in os.listdir(target_dir)
+                       if f.startswith(os.path.basename(base_no_ext) + ".")
+                       and not f.endswith(('.part', '.ytdl'))]
+            if matches:
+                downloaded_file = os.path.join(target_dir, sorted(matches)[0])
+
+        return downloaded_file, info, target_dir
+
     def download(self, url, format_type="1080p", title=None, video_id=None, subfolder=None,
                  fallback_client=False, format_fallback=False):
         """

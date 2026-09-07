@@ -5,7 +5,7 @@ set PYTHONDONTWRITEBYTECODE=1
 cd /d "%~dp0"
 
 echo ========================================================
-echo   MINI YOUTUBE DOWNLOADER (v1.0) - BY SNIPGEEK
+echo   MINI YOUTUBE DOWNLOADER (v1.1) - BY SNIPGEEK
 echo ========================================================
 echo.
 

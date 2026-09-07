@@ -1,4 +1,4 @@
-﻿# ⚡ Mini YouTube Downloader (v1.0.0)
+﻿# ⚡ Mini YouTube Downloader (v1.1.0)
 
 Aplikasi downloader YouTube & konverter audio mandiri, super ringan, dan ramah pemula untuk Windows.  
 *Crafted with ❤️ by [SnipGeek](https://snipgeek.com/)*
@@ -33,6 +33,7 @@ Hasil unduhan Anda akan otomatis dipisahkan secara rapi di dalam folder `downloa
 2. **Kualitas Audio Maksimal (MP3 320 kbps)**: Dilengkapi Cover Art Thumbnail dan ID3 Metadata otomatis.
 3. **Folder Management**: Menu 1-klik untuk langsung membuka folder file di Windows Explorer.
 4. **Bypass Proteksi YouTube**: Ekstraksi metadata instan anti-lag & anti-bot check.
+5. **Potong per Chapter/Surah ✂️ (Baru di v1.1.0)**: Video ber-chapter (mis. murottal Juz 30) bisa langsung dipotong jadi **file MP3 per surah/bagian** — deteksi chapter otomatis dari metadata, verifikasi surah yang "hilang timestamp" via Gemini, skip Opening, output rapi `downloads/audio/<Judul>/NN - Surah X.mp3`. File sumber mentah otomatis dihapus setelah dipotong.
 
 ---
 

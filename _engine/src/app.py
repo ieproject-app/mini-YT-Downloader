@@ -28,6 +28,14 @@ from rich.prompt import Prompt, Confirm
 
 from config_manager import ConfigManager
 from downloader import YTDownloader, sanitize_youtube_url, detect_playlist, is_channel_url
+from splitter import (
+    build_cut_segments,
+    chapters_from_info,
+    cut_audio_segments,
+    detect_missing_surahs,
+    find_env_file_keys,
+    trace_missing_boundary,
+)
 
 console = Console(force_terminal=True, legacy_windows=False)
 cfg = ConfigManager()
@@ -75,7 +83,7 @@ def format_duration(seconds):
     return f"{mins:02d}:{secs:02d}"
 
 def render_header():
-    header_text = "[bold cyan]MINI YOUTUBE DOWNLOADER (v1.0)[/bold cyan]\n[dim white]Video & High-Quality Audio Downloader (MP3 320k, FLAC, M4A, 4K)[/dim white]\n\n[bold yellow]Crafted with care by SnipGeek - https://snipgeek.com/[/bold yellow]"
+    header_text = "[bold cyan]MINI YOUTUBE DOWNLOADER (v1.1)[/bold cyan]\n[dim white]Video & High-Quality Audio Downloader (MP3 320k, FLAC, M4A, 4K) • Potong per Surah/Chapter[/dim white]\n\n[bold yellow]Crafted with care by SnipGeek - https://snipgeek.com/[/bold yellow]"
     console.print(Panel(header_text, border_style="cyan", box=box.ASCII, expand=False))
 
 BROWSER_CHOICES = ["chrome", "edge", "firefox", "brave", "vivaldi", "opera", "safari", ""]
@@ -360,30 +368,118 @@ def main():
             console.print(info_table)
             console.print()
 
-            last_res = cfg.get("last_resolution", "1080p")
-            res_choice = select_format_interactive(last_res)
+            # ── ✂️ Opsi: potong per chapter/surah jadi MP3 ────────────────────
+            chapters = chapters_from_info(info)
+            do_split = False
+            if chapters and len(chapters) > 1:
+                n_ch = len(chapters)
+                console.print(f"[bold cyan]✂️ Video ini punya {n_ch} chapter[/bold cyan] "
+                              f"[dim](bisa dipotong jadi {n_ch} file MP3 per bagian)[/dim]")
+                do_split = Confirm.ask(
+                    f"Potong video jadi file MP3 per surah/chapter (skip Opening)?",
+                    default=False)
 
-            if not res_choice:
-                continue
+            if do_split:
+                # Alur potong: unduh audio mentah sekali → deteksi gap surah →
+                # (opsional) Gemini trace → potong tiap segmen → MP3.
+                bitrate = int(cfg.get("cut_bitrate", 320) or 320)
+                skip_opening = bool(cfg.get("skip_opening", True))
+                sub = downloader.sanitize_title(title)
 
-            cfg.set("last_resolution", res_choice)
+                with console.status("[bold cyan]Mengunduh audio sumber (bestaudio, tanpa konversi)...", spinner="dots"):
+                    try:
+                        src_file, _, src_dir = downloader.download_audio_raw(
+                            clean_url, title=title, video_id=info.get('id'), subfolder=sub)
+                    except Exception as e:
+                        console.print(f"\n[bold red]Gagal mengunduh audio sumber:[/bold red] {e}")
+                        continue
+                target_saved_folder = src_dir
+                console.print(f"[dim]Audio sumber: [underline]{os.path.basename(src_file)}[/underline][/dim]")
 
-            console.print(f"\n[bold green]Memulai proses unduh & konversi...[/bold green]")
-            try:
-                out_file, target_saved_folder = downloader.download_with_fallback(
-                    clean_url,
-                    format_type=res_choice,
-                    title=info.get('title', ''),
-                    video_id=info.get('id'),
-                )
-                new_count = cfg.increment_download_count()
-                console.print(f"\n[bold green]Berhasil Disimpan:[/bold green] [underline]{out_file}[/underline]")
+                # Deteksi surah Juz Amma yang tidak punya timestamp (gap)
+                resolved_gaps = []
+                if cfg.get("gemini_trace", True):
+                    gaps = detect_missing_surahs(chapters)
+                    if gaps:
+                        console.print(f"[yellow]⚠ {len(gaps)} surah tanpa timestamp di urutan kanonik → verifikasi via Gemini...[/yellow]")
+                        keys = find_env_file_keys()
+                        for gap in gaps:
+                            console.print(f"  ↻ {gap['title']} [dim](cek window {format_duration(int(gap['prev_start']))}–{format_duration(int(gap['next_start']))})[/dim]")
+                            if not keys:
+                                console.print("    [red]✗ Gemini key tidak ditemukan; lanjut tanpa verifikasi.[/red]")
+                                continue
+                            result, model = trace_missing_boundary(
+                                src_file, gap['prev_start'], gap['next_start'], gap['title'], keys)
+                            if result and result.get("status") == "found":
+                                abs_start = result["start"]
+                                resolved_gaps.append({
+                                    "title": gap['title'],
+                                    "start": abs_start,
+                                    "end": gap['next_start'],
+                                })
+                                console.print(f"    [green]✓ {gap['title']} ditemukan, mulai {format_duration(int(abs_start))} (model {model})[/green]")
+                            elif result and result.get("status") == "absent":
+                                console.print(f"    [yellow]• {gap['title']} TIDAK ada dalam rekaman (dikonfirmasi Gemini {model}); tidak dibuat file terpisah.[/yellow]")
+                            else:
+                                console.print(f"    [red]✗ Gagal verifikasi ({model if model else 'error'}); lanjut tanpa verifikasi.[/red]")
+
+                segments = build_cut_segments(chapters, skip_opening=skip_opening, resolved_gaps=resolved_gaps, video_duration=info.get('duration'))
+                if not segments:
+                    console.print("[bold red]Tidak ada segmen valid untuk dipotong.[/bold red]")
+                    continue
+
+                console.print(f"\n[bold green]Memotong {len(segments)} segmen → MP3 {bitrate}kbps...[/bold green]")
+
+                def _split_progress(i, total, seg_title, dur):
+                    console.print(f"  [cyan][{i:02d}/{total}][/cyan] {seg_title} [dim]({format_duration(int(dur))})[/dim]")
+
+                try:
+                    outputs = cut_audio_segments(
+                        src_file, segments, src_dir,
+                        bitrate=bitrate, artist=channel or "",
+                        on_progress=_split_progress,
+                    )
+                except Exception as e:
+                    console.print(f"\n[bold red]Gagal memotong segmen:[/bold red] {e}")
+                    continue
+
+                # Bersihkan file sumber mentah (user hanya mau file per-surah)
+                try:
+                    os.remove(src_file)
+                except Exception:
+                    pass
+
+                new_count = 0
+                for _ in outputs:
+                    new_count = cfg.increment_download_count()
+                console.print(f"\n[bold green]Selesai:[/bold green] {len(outputs)} file MP3 tersimpan di [underline]{src_dir}[/underline]")
                 console.print(f"[dim]Total media tersimpan: {new_count}[/dim]\n")
-                
                 check_snipgeek_milestone(new_count)
+            else:
+                last_res = cfg.get("last_resolution", "1080p")
+                res_choice = select_format_interactive(last_res)
 
-            except Exception as e:
-                console.print(f"\n[bold red]Gagal mengunduh/mengonversi media:[/bold red] {e}\n")
+                if not res_choice:
+                    continue
+
+                cfg.set("last_resolution", res_choice)
+
+                console.print(f"\n[bold green]Memulai proses unduh & konversi...[/bold green]")
+                try:
+                    out_file, target_saved_folder = downloader.download_with_fallback(
+                        clean_url,
+                        format_type=res_choice,
+                        title=info.get('title', ''),
+                        video_id=info.get('id'),
+                    )
+                    new_count = cfg.increment_download_count()
+                    console.print(f"\n[bold green]Berhasil Disimpan:[/bold green] [underline]{out_file}[/underline]")
+                    console.print(f"[dim]Total media tersimpan: {new_count}[/dim]\n")
+
+                    check_snipgeek_milestone(new_count)
+
+                except Exception as e:
+                    console.print(f"\n[bold red]Gagal mengunduh/mengonversi media:[/bold red] {e}\n")
 
         console.print("[bold cyan][1][/bold cyan] Download Media Lain")
         console.print("[bold cyan][2][/bold cyan] Buka Folder File yang Baru Diunduh")
