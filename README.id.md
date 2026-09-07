@@ -48,6 +48,26 @@ ketukan — app menutup, updater berjalan di background, lalu Anda jalankan
 
 ---
 
+## 📸 Screenshot
+
+**Pertama kali — paste Gemini API key langsung di jembatan K:**
+
+![First run: Gemini key setup](screenshots/01-first-run-gemini-key-setup.png)
+
+**Key terpasang — fitur potong per surah siap:**
+
+![Key installed](screenshots/02-key-installed-ready.png)
+
+**Unduhan playlist berjalan (56/56 item):**
+
+![Playlist download progress](screenshots/03-playlist-download-progress.png)
+
+**Selesai — semua item tersimpan rapi:**
+
+![Playlist download complete](screenshots/04-playlist-download-complete.png)
+
+---
+
 ## 🔑 Gemini API Key (Opsional)
 
 Fitur **✂️ Potong per Surah/Chapter (murottal Juz Amma)** memakai

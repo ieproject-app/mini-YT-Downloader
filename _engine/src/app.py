@@ -89,14 +89,24 @@ def gemini_key_bridge():
     """Jembatan lengkap ambil & pasang key: buka halaman key -> paste ke app.
 
     Dipakai oleh shortcut 'K' di halaman utama dan Settings [6].
+    Prompt menerima KEDUANYA: nomor opsi (1/2/3) ATAU paste key langsung —
+    pengguna baru sering menempelkan key di prompt manapun, jadi jangan ditolak.
     """
     console.print(Panel(t("key.bridge.title"), border_style="magenta", box=box.ASCII))
     console.print(f"{t('status.gemini_key')} {gemini_key_status()}")
     console.print(t("key.bridge.option_open", url=AISTUDIO_APIKEY_URL))
     console.print(t("key.bridge.option_paste"))
     console.print(t("key.bridge.option_tutorial", url=TUTORIAL_API_KEY_URL))
+    console.print(t("key.bridge.paste_direct_hint"))
     console.print(t("key.bridge.cancel"))
-    choice = Prompt.ask(t("key.bridge.choose"), choices=["1", "2", "3", "0"], default="1")
+    choice = Prompt.ask(t("key.bridge.choose")).strip()
+
+    # Paste key langsung di prompt menu? Terima saja — jangan ditolak.
+    if _looks_like_api_key(choice):
+        keys_text = choice
+        choice = "save"
+    else:
+        choice = choice or "0"
 
     if choice == "0":
         return
@@ -104,19 +114,27 @@ def gemini_key_bridge():
         # Buka halaman key; setelah user kembali dengan key, langsung prompt paste
         webbrowser.open(AISTUDIO_APIKEY_URL)
         console.print(t("main.k_opened"))
+    elif choice == "2":
+        keys_text = Prompt.ask(t("key.bridge.paste_after")).strip()
+        choice = "save" if keys_text else "0"
     elif choice == "3":
         webbrowser.open(TUTORIAL_API_KEY_URL)
         return
 
-    keys_text = Prompt.ask(t("key.bridge.paste_after")).strip()
-    if not keys_text:
-        console.print(t("key.cancelled"))
-        return
-    if save_gemini_keys_to_env(keys_text):
-        console.print(t("key.saved"))
-        console.print(t("key.ready"))
-    else:
-        console.print(t("key.save_failed"))
+    if choice == "save":
+        if save_gemini_keys_to_env(keys_text):
+            console.print(t("key.saved"))
+            console.print(t("key.ready"))
+        else:
+            console.print(t("key.save_failed"))
+    elif choice not in ("1",):
+        # Input tak dikenal yang bukan key — jangan error merah, tawarkan paste
+        keys_text = Prompt.ask(t("key.bridge.paste_after")).strip()
+        if keys_text and save_gemini_keys_to_env(keys_text):
+            console.print(t("key.saved"))
+            console.print(t("key.ready"))
+        else:
+            console.print(t("key.cancelled"))
 
 
 def run_update_flow(force=False):
@@ -171,6 +189,16 @@ def run_update_flow(force=False):
     console.print(t("update.start_failed"))
 
 _MUROTTAL_RE = re.compile(r"murottal|juz\s*30|juz\s*amma|juz30|tilawah|qari|recit|al-?qur'?an", re.IGNORECASE)
+
+
+def _looks_like_api_key(text):
+    """Deteksi longgar: 'AIza…' (Google API key) atau token panjang tanpa spasi."""
+    s = (text or "").strip()
+    if not s or " " in s:
+        return False
+    if s.upper().startswith("AIZA"):
+        return True
+    return len(s) >= 20 and re.fullmatch(r"[A-Za-z0-9_\-]+", s) is not None
 
 
 def looks_like_murottal(*texts):

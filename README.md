@@ -48,6 +48,26 @@ update — the app closes, the updater runs in the background, and you start
 
 ---
 
+## 📸 Screenshots
+
+**First run — paste your Gemini API key right into the K bridge:**
+
+![First run: Gemini key setup](screenshots/01-first-run-gemini-key-setup.png)
+
+**Key installed — ready for the per-surah cut feature:**
+
+![Key installed](screenshots/02-key-installed-ready.png)
+
+**Playlist download in progress (56/56 items):**
+
+![Playlist download progress](screenshots/03-playlist-download-progress.png)
+
+**All done — every item saved neatly:**
+
+![Playlist download complete](screenshots/04-playlist-download-complete.png)
+
+---
+
 ## 🔑 Gemini API Key (Optional)
 
 The **✂️ Cut per Surah/Chapter (Juz murottal)** feature uses
