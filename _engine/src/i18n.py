@@ -21,7 +21,7 @@ _STRINGS = {
     # ─── EN ───────────────────────────────────────────────────────────────
     "en": {
         # Header & status bar
-        "header.title": "MINI YOUTUBE DOWNLOADER (v1.3)",
+        "header.title": "MINI YOUTUBE DOWNLOADER (v1.4)",
         "header.subtitle": "Video & High-Quality Audio Downloader (MP3 320k, FLAC, M4A, 4K) • Cut per Surah/Chapter",
         "header.credit": "Crafted with care by SnipGeek - https://snipgeek.com/",
         "status.downloads_folder": "Downloads Folder:",
@@ -225,7 +225,7 @@ _STRINGS = {
         "pf.ffmpeg_downloading": "[*] Starting portable FFmpeg auto-download (~90MB)... Please wait...",
         "pf.ffmpeg_progress": "\r -> Downloading FFmpeg: {pct}% [{read}MB / {total}MB]",
         "pf.ffmpeg_extracting": "\n[*] Extracting FFmpeg binaries to the internal folder...",
-        "pf.ffmpeg_done": "[✓] FFmpeg installed successfully (portable)!",
+        "pf.ffmpeg_done": "[✓] FFmpeg installed successfully!",
         "pf.ffmpeg_failed": "\n[X] Failed to download/extract FFmpeg: {err}",
         "pf.python_old": "[X] Python version too old: {ver}. Python >= 3.9 required",
         "pf.pip_installing": "[*] Installing required Python packages ({pkgs})...",
@@ -235,7 +235,7 @@ _STRINGS = {
 
     # ─── ID ───────────────────────────────────────────────────────────────
     "id": {
-        "header.title": "MINI YOUTUBE DOWNLOADER (v1.3)",
+        "header.title": "MINI YOUTUBE DOWNLOADER (v1.4)",
         "header.subtitle": "Video & High-Quality Audio Downloader (MP3 320k, FLAC, M4A, 4K) • Potong per Surah/Chapter",
         "header.credit": "Crafted with care by SnipGeek - https://snipgeek.com/",
         "status.downloads_folder": "Folder Downloads:",
@@ -427,7 +427,7 @@ _STRINGS = {
         "pf.ffmpeg_downloading": "[*] Memulai auto-download FFmpeg portable (~90MB)... Mohon tunggu...",
         "pf.ffmpeg_progress": "\r -> Mengunduh FFmpeg: {pct}% [{read}MB / {total}MB]",
         "pf.ffmpeg_extracting": "\n[*] Mengekstrak FFmpeg binary ke folder internal...",
-        "pf.ffmpeg_done": "[✓] FFmpeg berhasil dipasang secara portabel!",
+        "pf.ffmpeg_done": "[✓] FFmpeg berhasil dipasang!",
         "pf.ffmpeg_failed": "\n[X] Gagal mendownload/mengekstrak FFmpeg: {err}",
         "pf.python_old": "[X] Versi Python terlalu lama: {ver}. Butuh Python >= 3.9",
         "pf.pip_installing": "[*] Menginstall paket Python yang dibutuhkan ({pkgs})...",

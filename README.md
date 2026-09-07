@@ -1,4 +1,4 @@
-﻿# ⚡ Mini YouTube Downloader (v1.3.0)
+﻿# ⚡ Mini YouTube Downloader (v1.4.0)
 
 A standalone, super-lightweight YouTube downloader & audio converter for Windows — friendly for beginners.
 *Crafted with ❤️ by [SnipGeek](https://snipgeek.com/)*
@@ -20,6 +20,7 @@ The installer will:
 2. Download the app to `%LOCALAPPDATA%\MiniYT\app`
 3. Create an isolated Python environment + install dependencies
 4. Register the **`miniyt`** command (available in any terminal)
+5. FFmpeg (~160MB) downloads automatically on first launch of the app
 
 Then just type anywhere:
 
@@ -113,7 +114,7 @@ Default locations:
 The project uses Git tags as safe rollback points:
 
 - See commit history: `git log --oneline`
-- Roll back to the last stable version: `git checkout v1.2.1`
+- Roll back to the last stable version: `git checkout v1.3.0`
 - Undo the last commit: `git revert HEAD`
 - See changed files: `git status`
 
