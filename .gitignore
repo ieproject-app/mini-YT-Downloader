@@ -15,6 +15,9 @@ logs/
 # Internal planning notes (tidak untuk publik)
 plans/
 
+# Backup riwayat git (JANGAN pernah masuk git)
+.history-backup/
+
 # API key lokal pengguna (jangan pernah masuk git)
 .env
 .env.local
