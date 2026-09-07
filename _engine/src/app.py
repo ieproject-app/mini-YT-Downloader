@@ -147,7 +147,7 @@ def run_update_flow(force=False):
         console.print(Panel(shown, title=t("update.notes_title", ver=rel["version"]),
                             border_style="cyan", box=box.ASCII))
 
-    if not Confirm.ask(t("update.prompt"), default=True):
+    if not Confirm.ask(t("update.prompt"), default=False):
         console.print(t("update.declined", url=rel["url"]))
         return
 
