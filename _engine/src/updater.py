@@ -10,6 +10,9 @@ updater.py — Cek update via GitHub Releases + self-update (Windows installer).
 import os
 import subprocess
 import time
+from pathlib import Path
+
+import paths
 
 try:
     import requests
