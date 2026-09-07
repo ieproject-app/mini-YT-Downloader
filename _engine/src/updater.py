@@ -17,7 +17,7 @@ except ImportError:  # pragma: no cover
     requests = None
 
 GITHUB_REPO = "ieproject-app/mini-YT-Downloader"
-LATEST_API = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+RELEASES_API = f"https://api.github.com/repos/{GITHUB_REPO}/releases?per_page=30"
 RELEASES_URL = f"https://github.com/{GITHUB_REPO}/releases"
 INSTALLER_URL = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/install.ps1"
 CHECK_INTERVAL = 24 * 3600  # detik
@@ -49,16 +49,30 @@ def fetch_latest_release(timeout=10):
         return None
     try:
         resp = requests.get(
-            LATEST_API,
+            RELEASES_API,
             timeout=timeout,
             headers={"Accept": "application/vnd.github+json"},
         )
         if resp.status_code != 200:
             return None
-        data = resp.json()
-        tag = (data.get("tag_name") or "").strip()
-        if not tag:
+        releases = resp.json()
+        if not isinstance(releases, list):
             return None
+        # Pilih versi semver TERTINGGI (bukan 'latest' GitHub yang berdasar
+        # tanggal pembuatan release — salah bila rilis lama di-backfill).
+        best = None
+        for data in releases:
+            if not isinstance(data, dict):
+                continue
+            tag = (data.get("tag_name") or "").strip()
+            if not tag:
+                continue
+            ver = _parse_ver(tag.lstrip("vV"))
+            if best is None or ver > best[0]:
+                best = (ver, tag, data)
+        if best is None:
+            return None
+        _, tag, data = best
         return {
             "tag": tag,
             "version": tag.lstrip("vV"),
