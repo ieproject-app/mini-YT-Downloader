@@ -11,6 +11,7 @@ if sys.platform == "win32":
 
 import time
 import webbrowser
+import subprocess
 from pathlib import Path
 
 import re
@@ -47,13 +48,14 @@ from splitter import (
     trace_missing_boundary,
     transcribe_surah_timeline,
 )
+import updater
 from i18n import t
 
 console = Console(force_terminal=True, legacy_windows=False)
 cfg = ConfigManager()
 i18n.set_language(cfg.get("language", "auto"))
 
-APP_VERSION = "1.4.2"
+APP_VERSION = "1.5.0"
 
 # ── Tautan onboarding Gemini API key ──
 AISTUDIO_APIKEY_URL = "https://aistudio.google.com/apikey"
@@ -113,6 +115,58 @@ def gemini_key_bridge():
         console.print(t("key.ready"))
     else:
         console.print(t("key.save_failed"))
+
+
+def run_update_flow(force=False):
+    """Cek update GitHub Releases; bila tersedia tampilkan changelog + tawaran.
+
+    force=True mengabaikan gerbang 24 jam (dipakai menu Settings & 'miniyt update').
+    """
+    if not updater.should_check(cfg, force=force):
+        return
+    updater.mark_checked(cfg)
+
+    with console.status(t("update.checking"), spinner="dots"):
+        rel = updater.fetch_latest_release()
+    if not rel:
+        if force:
+            console.print(t("update.check_failed"))
+        return
+
+    if not updater.is_newer(rel["version"], APP_VERSION):
+        if force:
+            console.print(t("update.up_to_date", ver=APP_VERSION))
+        return
+
+    console.print(t("update.available", latest=rel["version"], current=APP_VERSION))
+    notes = (rel.get("notes") or "").strip()
+    if notes:
+        shown = notes if len(notes) <= 900 else notes[:900].rsplit("\n", 1)[0] + "\n…"
+        console.print(Panel(shown, title=t("update.notes_title", ver=rel["version"]),
+                            border_style="cyan", box=box.ASCII))
+
+    if not Confirm.ask(t("update.prompt"), default=True):
+        console.print(t("update.declined", url=rel["url"]))
+        return
+
+    if paths.is_portable():
+        console.print(t("update.portable_note"))
+        try:
+            subprocess.run(["git", "pull", "--ff-only"], check=False)
+        except Exception as e:
+            console.print(t("update.portable_failed", err=e))
+        console.print(t("update.restart_note"))
+        return
+
+    console.print(t("update.starting"))
+    try:
+        if updater.spawn_installer_update():
+            console.print(t("update.closing"))
+            time.sleep(2)
+            sys.exit(0)
+    except Exception:
+        pass
+    console.print(t("update.start_failed"))
 
 _MUROTTAL_RE = re.compile(r"murottal|juz\s*30|juz\s*amma|juz30|tilawah|qari|recit|al-?qur'?an", re.IGNORECASE)
 
@@ -211,12 +265,13 @@ def settings_menu(downloader):
         console.print(t("settings.m5"))
         console.print(t("settings.m6"))
         console.print(t("settings.m7"))
+        console.print(t("settings.m8"))
         console.print(t("settings.m0"))
 
         console.print(f"{t('status.gemini_key')} {gemini_key_status()}")
         console.print(t("settings.key_note"))
 
-        opt = Prompt.ask(t("settings.prompt"), choices=["1", "2", "3", "4", "5", "6", "7", "0"], default="0")
+        opt = Prompt.ask(t("settings.prompt"), choices=["1", "2", "3", "4", "5", "6", "7", "8", "0"], default="0")
 
         if opt == "0":
             break
@@ -267,6 +322,8 @@ def settings_menu(downloader):
             time.sleep(1)
         elif opt == "7":
             ask_language(allow_reask=True)
+        elif opt == "8":
+            run_update_flow(force=True)
 
 
 def render_format_menu():
@@ -339,6 +396,9 @@ def main():
         console.print(t("onboard.tip"))
         prompt_install_gemini_key(t("onboard.title"))
         cfg.set("gemini_key_prompted", True)
+
+    # ── Cek update (maks 1x per 24 jam) ──
+    run_update_flow(force=False)
 
     while True:
         render_header()
@@ -694,6 +754,9 @@ if __name__ == "__main__":
     try:
         if "--version" in sys.argv:
             print(f"MiniYT v{APP_VERSION}")
+            sys.exit(0)
+        if "update" in sys.argv[1:]:
+            run_update_flow(force=True)
             sys.exit(0)
         main()
     except KeyboardInterrupt:

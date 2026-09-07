@@ -1,0 +1,103 @@
+"""
+updater.py — Cek update via GitHub Releases + self-update (Windows installer).
+
+- Sumber kebenaran: GitHub Releases (tag_name = versi, body = changelog).
+- Cek dibatasi maks 1x per 24 jam (disimpan di config `last_update_check`).
+- Self-update: jalankan installer resmi secara detached (background), lalu
+  aplikasi keluar; user menjalankan `miniyt` lagi setelah 1-2 menit.
+"""
+
+import os
+import subprocess
+import time
+
+try:
+    import requests
+except ImportError:  # pragma: no cover
+    requests = None
+
+GITHUB_REPO = "ieproject-app/mini-YT-Downloader"
+LATEST_API = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+RELEASES_URL = f"https://github.com/{GITHUB_REPO}/releases"
+INSTALLER_URL = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/install.ps1"
+CHECK_INTERVAL = 24 * 3600  # detik
+
+_CREATE_NO_WINDOW = 0x08000000  # Windows: proses background tanpa jendela
+
+
+def _parse_ver(version):
+    """'v1.4.2' -> (1, 4, 2). Bagian non-numerik diabaikan."""
+    parts = []
+    for p in str(version or "").strip().lstrip("vV").split("."):
+        try:
+            parts.append(int(p))
+        except ValueError:
+            break
+    return tuple(parts) or (0,)
+
+
+def is_newer(latest, current):
+    try:
+        return _parse_ver(latest) > _parse_ver(current)
+    except Exception:
+        return False
+
+
+def fetch_latest_release(timeout=10):
+    """Ambil release terbaru dari GitHub. Return dict atau None bila gagal."""
+    if requests is None:
+        return None
+    try:
+        resp = requests.get(
+            LATEST_API,
+            timeout=timeout,
+            headers={"Accept": "application/vnd.github+json"},
+        )
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+        tag = (data.get("tag_name") or "").strip()
+        if not tag:
+            return None
+        return {
+            "tag": tag,
+            "version": tag.lstrip("vV"),
+            "notes": (data.get("body") or "").strip(),
+            "url": data.get("html_url") or RELEASES_URL,
+        }
+    except Exception:
+        return None
+
+
+def should_check(cfg, force=False):
+    """Cek bila dipaksa, atau bila belum pernah cek dalam 24 jam terakhir."""
+    if force:
+        return True
+    if not cfg.get("check_updates", True):
+        return False
+    last = float(cfg.get("last_update_check", 0) or 0)
+    return (time.time() - last) >= CHECK_INTERVAL
+
+
+def mark_checked(cfg):
+    cfg.set("last_update_check", time.time())
+
+
+def spawn_installer_update():
+    """Jalankan installer resmi terbaru secara detached (Windows).
+
+    App harus keluar setelah memanggil ini (file lama digantikan installer).
+    """
+    if os.name != "nt":
+        return False
+    inner = f"irm {INSTALLER_URL} | iex"
+    cmd = (
+        "set MINIYT_SKIP_LAUNCH=1&& "
+        f'powershell -NoProfile -ExecutionPolicy Bypass -Command "{inner}"'
+    )
+    subprocess.Popen(
+        ["cmd", "/c", cmd],
+        creationflags=_CREATE_NO_WINDOW,
+        close_fds=True,
+    )
+    return True

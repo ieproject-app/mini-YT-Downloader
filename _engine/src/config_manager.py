@@ -26,6 +26,9 @@ class ConfigManager:
             "gemini_trace": True,
             # Onboarding Gemini key sudah pernah ditawarkan?
             "gemini_key_prompted": False,
+            # Update checker (GitHub Releases, maks 1x/24 jam)
+            "check_updates": True,
+            "last_update_check": 0,
             # Bahasa UI: "auto" | "id" | "en"
             "language": "auto",
             "language_prompted": False,

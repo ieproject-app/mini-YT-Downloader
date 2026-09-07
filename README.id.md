@@ -1,4 +1,4 @@
-# ⚡ Mini YouTube Downloader (v1.4.2)
+# ⚡ Mini YouTube Downloader (v1.5.0)
 
 Aplikasi downloader YouTube & konverter audio mandiri, super ringan, dan ramah pemula untuk Windows.
 *Crafted with ❤️ by [SnipGeek](https://snipgeek.com/)*
@@ -30,6 +30,17 @@ miniyt
 
 > Lebih suka cara klasik? Download repo ini lalu klik ganda **`run.bat`**
 > (mode portable — semua data tetap di dalam folder repo).
+
+## 🔄 Update
+
+Aplikasi mengecek GitHub (maks 1x per 24 jam). Bila ada versi baru, app
+menampilkan **apa yang berubah** (changelog) dan menawarkan update satu
+ketukan — app menutup, updater berjalan di background, lalu Anda jalankan
+`miniyt` lagi.
+
+- Cek manual kapan saja: `miniyt update`, atau Settings → **[8] Cek Update**
+- Matikan auto-check: set `"check_updates": false` di `config.json` aplikasi
+- Semua rilis & changelog: [halaman Releases](https://github.com/ieproject-app/mini-YT-Downloader/releases)
 
 > **Catatan Pengguna Baru**:
 > - Python **3.9+** harus terinstall dengan centang *"Add Python to PATH"*.

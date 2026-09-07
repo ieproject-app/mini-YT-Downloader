@@ -21,7 +21,7 @@ _STRINGS = {
     # ─── EN ───────────────────────────────────────────────────────────────
     "en": {
         # Header & status bar
-        "header.title": "MINI YOUTUBE DOWNLOADER (v1.4.2)",
+        "header.title": "MINI YOUTUBE DOWNLOADER (v1.5)",
         "header.subtitle": "Video & High-Quality Audio Downloader (MP3 320k, FLAC, M4A, 4K) • Cut per Surah/Chapter",
         "header.credit": "Crafted with care by SnipGeek - https://snipgeek.com/",
         "status.downloads_folder": "Downloads Folder:",
@@ -149,6 +149,19 @@ _STRINGS = {
         "key.bridge.cancel": "[0] Cancel",
         "key.bridge.choose": "Choose",
         "key.bridge.paste_after": "Paste your Gemini API Key here (or press Enter to skip):",
+        "update.checking": "[bold cyan]Checking for updates...",
+        "update.check_failed": "[yellow]Could not check for updates (offline or GitHub unreachable).[/yellow]",
+        "update.up_to_date": "[bold green]You are on the latest version (v{ver}).[/bold green]",
+        "update.available": "\n[bold yellow]🔄 Update available: v{latest}[/bold yellow] [dim](you have v{current})[/dim]",
+        "update.notes_title": "What's new in v{ver}",
+        "update.prompt": "Update now?",
+        "update.declined": "[dim]Skipped. Full release notes: {url}[/dim]",
+        "update.starting": "[bold cyan]Preparing update...[/bold cyan]",
+        "update.closing": "[bold green]Updater is running in the background — the app will close now.[/bold green]\n[dim]Wait 1–2 minutes, then run 'miniyt' again to use the new version.[/dim]",
+        "update.start_failed": "[bold red]Failed to start the updater. Re-run the install command to update manually.[/bold red]",
+        "update.portable_note": "[yellow]Portable mode: updating via git pull...[/yellow]",
+        "update.portable_failed": "[red]git pull failed: {err}[/red]\n[dim]Update manually: re-download the repo, or run 'git pull' in the repo folder.[/dim]",
+        "update.restart_note": "[dim]Restart the app to use the new version.[/dim]",
 
         # Settings menu
         "settings.title": "[bold yellow]SETTINGS & FOLDER[/bold yellow]",
@@ -161,6 +174,7 @@ _STRINGS = {
         "settings.m5": "[bold cyan][5][/bold cyan] Browser Cookies (for videos that fail: bot-check / truncated stream)",
         "settings.m6": "[bold cyan][6][/bold cyan] Gemini API Key (optional — for the murottal per-surah cut feature)",
         "settings.m7": "[bold cyan][7][/bold cyan] Language / Bahasa",
+        "settings.m8": "[bold cyan][8][/bold cyan] Check for Updates",
         "settings.m0": "[bold cyan][0][/bold cyan] Back to Main Page\n",
         "settings.prompt": "Choose menu",
         "settings.folder_changed": "[bold green]Folder changed to:[/bold green] {dir}",
@@ -242,7 +256,7 @@ _STRINGS = {
 
     # ─── ID ───────────────────────────────────────────────────────────────
     "id": {
-        "header.title": "MINI YOUTUBE DOWNLOADER (v1.4.2)",
+        "header.title": "MINI YOUTUBE DOWNLOADER (v1.5)",
         "header.subtitle": "Video & High-Quality Audio Downloader (MP3 320k, FLAC, M4A, 4K) • Potong per Surah/Chapter",
         "header.credit": "Crafted with care by SnipGeek - https://snipgeek.com/",
         "status.downloads_folder": "Folder Downloads:",
@@ -365,6 +379,19 @@ _STRINGS = {
         "key.bridge.cancel": "[0] Batal",
         "key.bridge.choose": "Pilih",
         "key.bridge.paste_after": "Paste Gemini API Key Anda di sini (atau Enter untuk lewati):",
+        "update.checking": "[bold cyan]Mengecek update...",
+        "update.check_failed": "[yellow]Gagal cek update (offline atau GitHub tidak terjangkau).[/yellow]",
+        "update.up_to_date": "[bold green]Anda sudah memakai versi terbaru (v{ver}).[/bold green]",
+        "update.available": "\n[bold yellow]🔄 Update tersedia: v{latest}[/bold yellow] [dim](Anda memakai v{current})[/dim]",
+        "update.notes_title": "Yang baru di v{ver}",
+        "update.prompt": "Update sekarang?",
+        "update.declined": "[dim]Dilewati. Catatan rilis lengkap: {url}[/dim]",
+        "update.starting": "[bold cyan]Menyiapkan update...[/bold cyan]",
+        "update.closing": "[bold green]Updater berjalan di latar belakang — aplikasi akan menutup.[/bold green]\n[dim]Tunggu 1–2 menit, lalu jalankan 'miniyt' lagi untuk memakai versi baru.[/dim]",
+        "update.start_failed": "[bold red]Gagal menjalankan updater. Jalankan ulang perintah install untuk update manual.[/bold red]",
+        "update.portable_note": "[yellow]Mode portable: update via git pull...[/yellow]",
+        "update.portable_failed": "[red]git pull gagal: {err}[/red]\n[dim]Update manual: unduh ulang repo, atau jalankan 'git pull' di folder repo.[/dim]",
+        "update.restart_note": "[dim]Jalankan ulang aplikasi untuk memakai versi baru.[/dim]",
 
         "settings.title": "[bold yellow]PENGATURAN & FOLDER[/bold yellow]",
         "settings.folder_main": "Folder Utama : [underline]{dir}[/underline]",
@@ -376,6 +403,7 @@ _STRINGS = {
         "settings.m5": "[bold cyan][5][/bold cyan] Cookies Browser (untuk video yang gagal: bot-check / stream terpotong)",
         "settings.m6": "[bold cyan][6][/bold cyan] Gemini API Key (opsional — untuk fitur potong per surah murottal)",
         "settings.m7": "[bold cyan][7][/bold cyan] Bahasa / Language",
+        "settings.m8": "[bold cyan][8][/bold cyan] Cek Update",
         "settings.m0": "[bold cyan][0][/bold cyan] Kembali ke Halaman Utama\n",
         "settings.prompt": "Pilih menu",
         "settings.folder_changed": "[bold green]Folder diubah ke:[/bold green] {dir}",
