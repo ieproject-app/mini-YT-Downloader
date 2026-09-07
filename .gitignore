@@ -18,6 +18,9 @@ plans/
 # Backup riwayat git (JANGAN pernah masuk git)
 .history-backup/
 
+# Artefak updater runtime (dibuat app saat update)
+_engine/updater.ps1
+
 # API key lokal pengguna (jangan pernah masuk git)
 .env
 .env.local
