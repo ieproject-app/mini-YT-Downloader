@@ -4,12 +4,12 @@
 
 If you discover a security issue, please open a
 [GitHub issue](https://github.com/ieproject-app/mini-YT-Downloader/issues) or
-contact the maintainer via [https://snipgeek.com/](https://snipgeek.com/).
+contact the maintainer via [https://labs.snipgeek.com/](https://labs.snipgeek.com/).
 Do **not** post API keys or personal data in public issues.
 
 Jika Anda menemukan masalah keamanan, silakan buka
 [GitHub issue](https://github.com/ieproject-app/mini-YT-Downloader/issues) atau
-hubungi maintainer via [https://snipgeek.com/](https://snipgeek.com/).
+hubungi maintainer via [https://labs.snipgeek.com/](https://labs.snipgeek.com/).
 Jangan pernah memposting API key atau data pribadi di issue publik.
 
 ## What this app does with your data / Apa yang app lakukan dengan data Anda

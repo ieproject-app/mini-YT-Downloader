@@ -1,7 +1,7 @@
-﻿# ⚡ Mini YouTube Downloader (v1.5.0)
+﻿# ⚡ Mini YouTube Downloader (v1.5.1)
 
 A standalone, super-lightweight YouTube downloader & audio converter for Windows — friendly for beginners.
-*Crafted with ❤️ by [SnipGeek](https://snipgeek.com/)*
+*Crafted with ❤️ by [SnipGeek](https://labs.snipgeek.com/)*
 
 🌐 **Bahasa Indonesia: [README.id.md](README.id.md)**
 
@@ -148,4 +148,4 @@ The project uses Git tags as safe rollback points:
 
 ## 🌐 About the Developer
 Find productivity tools, templates, and tech articles at:
-🔗 **[https://snipgeek.com/](https://snipgeek.com/)**
+🔗 **[https://labs.snipgeek.com/](https://labs.snipgeek.com/)**

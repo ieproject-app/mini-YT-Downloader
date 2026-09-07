@@ -55,12 +55,14 @@ console = Console(force_terminal=True, legacy_windows=False)
 cfg = ConfigManager()
 i18n.set_language(cfg.get("language", "auto"))
 
-APP_VERSION = "1.5.0"
+APP_VERSION = "1.5.1"
 
 # ── Tautan onboarding Gemini API key ──
 AISTUDIO_APIKEY_URL = "https://aistudio.google.com/apikey"
+# Home proyek & artikel (labs) — tempat tool ini + update AI lainnya
+SNIPGEEK_LABS_URL = "https://labs.snipgeek.com/"
 # TODO(blog): ganti URL di bawah dengan artikel tutorial lengkap setelah dipublikasikan
-TUTORIAL_API_KEY_URL = "https://snipgeek.com/"
+TUTORIAL_API_KEY_URL = SNIPGEEK_LABS_URL
 
 
 def prompt_install_gemini_key(title=None):
@@ -297,7 +299,7 @@ def settings_menu(downloader):
                     time.sleep(1)
                     break
         elif opt == "4":
-            webbrowser.open("https://snipgeek.com/")
+            webbrowser.open(SNIPGEEK_LABS_URL)
             console.print(t("main.opening_site"))
             time.sleep(1)
         elif opt == "5":
@@ -379,7 +381,7 @@ def check_snipgeek_milestone(current_count):
         console.print(appreciation)
         open_web = Confirm.ask(t("milestone.open_prompt"), default=True)
         if open_web:
-            webbrowser.open("https://snipgeek.com/")
+            webbrowser.open(SNIPGEEK_LABS_URL)
             console.print(t("milestone.opened"))
             time.sleep(1)
 
@@ -422,7 +424,7 @@ def main():
             time.sleep(1)
             continue
         elif cmd == 'w':
-            webbrowser.open("https://snipgeek.com/")
+            webbrowser.open(SNIPGEEK_LABS_URL)
             console.print(t("main.opening_site"))
             time.sleep(1)
             continue
@@ -746,7 +748,7 @@ def main():
         elif next_action == "4":
             settings_menu(downloader)
         elif next_action == "5":
-            webbrowser.open("https://snipgeek.com/")
+            webbrowser.open(SNIPGEEK_LABS_URL)
             console.print(t("main.opening_site"))
             time.sleep(1)
 

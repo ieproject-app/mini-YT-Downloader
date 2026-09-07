@@ -21,9 +21,9 @@ _STRINGS = {
     # ─── EN ───────────────────────────────────────────────────────────────
     "en": {
         # Header & status bar
-        "header.title": "MINI YOUTUBE DOWNLOADER (v1.5)",
+        "header.title": "MINI YOUTUBE DOWNLOADER (v1.5.1)",
         "header.subtitle": "Video & High-Quality Audio Downloader (MP3 320k, FLAC, M4A, 4K) • Cut per Surah/Chapter",
-        "header.credit": "Crafted with care by SnipGeek - https://snipgeek.com/",
+        "header.credit": "Crafted with care by SnipGeek - https://labs.snipgeek.com/",
         "status.downloads_folder": "Downloads Folder:",
         "status.auto_split": "(auto-split: [cyan]video/[/cyan] & [cyan]audio/[/cyan])",
         "status.default_format": "Default Format:",
@@ -35,7 +35,7 @@ _STRINGS = {
         "status.ffmpeg_ready": "[bold green]Ready[/bold green]",
         "status.ffmpeg_missing": "[bold red]Not found[/bold red]",
         "status.cookies_off": "[dim]off[/dim]",
-        "status.shortcuts": "[dim]Shortcuts: type [bold cyan]'S'[/bold cyan] (Settings) | [bold cyan]'O'[/bold cyan] (Open Folder) | [bold cyan]'K'[/bold cyan] (Gemini API Key) | [bold cyan]'W'[/bold cyan] (SnipGeek.com) | [bold cyan]'Q'[/bold cyan] (Quit)[/dim]\n",
+        "status.shortcuts": "[dim]Shortcuts: type [bold cyan]'S'[/bold cyan] (Settings) | [bold cyan]'O'[/bold cyan] (Open Folder) | [bold cyan]'K'[/bold cyan] (Gemini API Key) | [bold cyan]'W'[/bold cyan] (SnipGeek Labs) | [bold cyan]'Q'[/bold cyan] (Quit)[/dim]\n",
 
         # Language
         "lang.question_title": "[bold cyan]🌐 Choose language / Pilih bahasa[/bold cyan]",
@@ -49,7 +49,7 @@ _STRINGS = {
         "main.url_prompt": "Enter YouTube URL (or type S/O/K/W/Q)",
         "main.bye": "\n[bold green]Thank you for using Mini YT Downloader by SnipGeek![/bold green]",
         "main.folder_opened": "[bold green]Folder opened in Windows Explorer![/bold green]",
-        "main.opening_site": "[bold green]Opening https://snipgeek.com/ in your browser...[/bold green]",
+        "main.opening_site": "[bold green]Opening https://labs.snipgeek.com/ in your browser...[/bold green]",
         "main.k_opened": "[bold green]Opening https://aistudio.google.com/apikey in your browser...[/bold green]",
         "main.k_hint": "After copying your key: type [bold cyan]S[/bold cyan] → menu [bold cyan][6][/bold cyan] Gemini API Key to install it.",
         "main.bad_url.title": "\n[bold red]That URL is not a supported YouTube link.[/bold red]",
@@ -79,7 +79,7 @@ _STRINGS = {
         "main.next2": "[bold cyan][2][/bold cyan] Open Folder of Newly Downloaded File",
         "main.next3": "[bold cyan][3][/bold cyan] Open Main downloads/ Folder",
         "main.next4": "[bold cyan][4][/bold cyan] Settings / Change Folder",
-        "main.next5": "[bold cyan][5][/bold cyan] Visit SnipGeek.com",
+        "main.next5": "[bold cyan][5][/bold cyan] Visit SnipGeek Labs",
         "main.next0": "[bold cyan][0][/bold cyan] Quit\n",
         "main.next_prompt": "Choose next action",
 
@@ -170,7 +170,7 @@ _STRINGS = {
         "settings.m1": "[bold cyan][1][/bold cyan] Change Main Download Folder (Explorer Dialog)",
         "settings.m2": "[bold cyan][2][/bold cyan] Open downloads/ Folder in Explorer Now",
         "settings.m3": "[bold cyan][3][/bold cyan] Change Default Format / Resolution",
-        "settings.m4": "[bold cyan][4][/bold cyan] Visit SnipGeek.com (Tech Tools & Guides)",
+        "settings.m4": "[bold cyan][4][/bold cyan] Visit SnipGeek Labs (Projects & Updates)",
         "settings.m5": "[bold cyan][5][/bold cyan] Browser Cookies (for videos that fail: bot-check / truncated stream)",
         "settings.m6": "[bold cyan][6][/bold cyan] Gemini API Key (optional — for the murottal per-surah cut feature)",
         "settings.m7": "[bold cyan][7][/bold cyan] Language / Bahasa",
@@ -209,8 +209,8 @@ _STRINGS = {
         "milestone.title": "[bold green]A note from SnipGeek[/bold green]",
         "milestone.body": "[bold yellow]Congrats! You have smoothly downloaded {n} pieces of media![/bold yellow]\n\n"
                           "This app is developed for free by the [bold cyan]SnipGeek[/bold cyan] team.\n"
-                          "Visit [underline bold cyan]https://snipgeek.com/[/underline bold cyan] to find more tools, templates, and tech articles!",
-        "milestone.open_prompt": "Open https://snipgeek.com/ in your browser now?",
+                          "Visit [underline bold cyan]https://labs.snipgeek.com/[/underline bold cyan] to find more tools, templates, and tech articles!",
+        "milestone.open_prompt": "Open https://labs.snipgeek.com/ in your browser now?",
         "milestone.opened": "[bold green]Opening SnipGeek in your browser... Thank you for the support![/bold green]\n",
 
         # Format labels
@@ -256,9 +256,9 @@ _STRINGS = {
 
     # ─── ID ───────────────────────────────────────────────────────────────
     "id": {
-        "header.title": "MINI YOUTUBE DOWNLOADER (v1.5)",
+        "header.title": "MINI YOUTUBE DOWNLOADER (v1.5.1)",
         "header.subtitle": "Video & High-Quality Audio Downloader (MP3 320k, FLAC, M4A, 4K) • Potong per Surah/Chapter",
-        "header.credit": "Crafted with care by SnipGeek - https://snipgeek.com/",
+        "header.credit": "Crafted with care by SnipGeek - https://labs.snipgeek.com/",
         "status.downloads_folder": "Folder Downloads:",
         "status.auto_split": "(auto-split: [cyan]video/[/cyan] & [cyan]audio/[/cyan])",
         "status.default_format": "Format Default:",
@@ -270,7 +270,7 @@ _STRINGS = {
         "status.ffmpeg_ready": "[bold green]Siap[/bold green]",
         "status.ffmpeg_missing": "[bold red]Tidak ada[/bold red]",
         "status.cookies_off": "[dim]nonaktif[/dim]",
-        "status.shortcuts": "[dim]Shortcut: Ketik [bold cyan]'S'[/bold cyan] (Settings/Folder) | [bold cyan]'O'[/bold cyan] (Buka Folder) | [bold cyan]'K'[/bold cyan] (Gemini API Key) | [bold cyan]'W'[/bold cyan] (SnipGeek.com) | [bold cyan]'Q'[/bold cyan] (Keluar)[/dim]\n",
+        "status.shortcuts": "[dim]Shortcut: Ketik [bold cyan]'S'[/bold cyan] (Settings/Folder) | [bold cyan]'O'[/bold cyan] (Buka Folder) | [bold cyan]'K'[/bold cyan] (Gemini API Key) | [bold cyan]'W'[/bold cyan] (SnipGeek Labs) | [bold cyan]'Q'[/bold cyan] (Keluar)[/dim]\n",
 
         "lang.question_title": "[bold cyan]🌐 Pilih bahasa / Choose language[/bold cyan]",
         "lang.opt_id": "[bold cyan][1][/bold cyan] Bahasa Indonesia",
@@ -282,7 +282,7 @@ _STRINGS = {
         "main.url_prompt": "Masukkan URL YouTube (atau ketik S/O/K/W/Q)",
         "main.bye": "\n[bold green]Terima kasih telah menggunakan Mini YT Downloader by SnipGeek![/bold green]",
         "main.folder_opened": "[bold green]Folder dibuka di Windows Explorer![/bold green]",
-        "main.opening_site": "[bold green]Membuka https://snipgeek.com/ di browser...[/bold green]",
+        "main.opening_site": "[bold green]Membuka https://labs.snipgeek.com/ di browser...[/bold green]",
         "main.k_opened": "[bold green]Membuka https://aistudio.google.com/apikey di browser...[/bold green]",
         "main.k_hint": "Setelah key disalin: ketik [bold cyan]S[/bold cyan] → menu [bold cyan][6][/bold cyan] Gemini API Key untuk memasangnya.",
         "main.bad_url.title": "\n[bold red]URL bukan link YouTube yang didukung.[/bold red]",
@@ -312,7 +312,7 @@ _STRINGS = {
         "main.next2": "[bold cyan][2][/bold cyan] Buka Folder File yang Baru Diunduh",
         "main.next3": "[bold cyan][3][/bold cyan] Buka Folder Utama downloads/",
         "main.next4": "[bold cyan][4][/bold cyan] Pengaturan / Ganti Folder",
-        "main.next5": "[bold cyan][5][/bold cyan] Kunjungi SnipGeek.com",
+        "main.next5": "[bold cyan][5][/bold cyan] Kunjungi SnipGeek Labs",
         "main.next0": "[bold cyan][0][/bold cyan] Keluar\n",
         "main.next_prompt": "Pilih aksi selanjutnya",
 
@@ -399,7 +399,7 @@ _STRINGS = {
         "settings.m1": "[bold cyan][1][/bold cyan] Ganti Folder Utama Unduhan (Explorer Dialog)",
         "settings.m2": "[bold cyan][2][/bold cyan] Buka Folder downloads/ di Explorer Sekarang",
         "settings.m3": "[bold cyan][3][/bold cyan] Ubah Default Format / Resolusi",
-        "settings.m4": "[bold cyan][4][/bold cyan] Kunjungi SnipGeek.com (Tech Tools & Guides)",
+        "settings.m4": "[bold cyan][4][/bold cyan] Kunjungi SnipGeek Labs (Proyek & Update)",
         "settings.m5": "[bold cyan][5][/bold cyan] Cookies Browser (untuk video yang gagal: bot-check / stream terpotong)",
         "settings.m6": "[bold cyan][6][/bold cyan] Gemini API Key (opsional — untuk fitur potong per surah murottal)",
         "settings.m7": "[bold cyan][7][/bold cyan] Bahasa / Language",
@@ -436,8 +436,8 @@ _STRINGS = {
         "milestone.title": "[bold green]Catatan dari SnipGeek[/bold green]",
         "milestone.body": "[bold yellow]Selamat! Anda telah berhasil mengunduh {n} media dengan lancar![/bold yellow]\n\n"
                           "Aplikasi ini dikembangkan secara gratis oleh tim [bold cyan]SnipGeek[/bold cyan].\n"
-                          "Kunjungi [underline bold cyan]https://snipgeek.com/[/underline bold cyan] untuk menemukan berbagai tools, template, dan artikel teknologi lainnya!",
-        "milestone.open_prompt": "Buka https://snipgeek.com/ di browser Anda sekarang?",
+                          "Kunjungi [underline bold cyan]https://labs.snipgeek.com/[/underline bold cyan] untuk menemukan berbagai tools, template, dan artikel teknologi lainnya!",
+        "milestone.open_prompt": "Buka https://labs.snipgeek.com/ di browser Anda sekarang?",
         "milestone.opened": "[bold green]Membuka SnipGeek di browser Anda... Terima kasih atas dukungannya![/bold green]\n",
 
         "fmt.1080p": "1080p Full HD (MP4 - Rekomendasi)",
