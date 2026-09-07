@@ -13,6 +13,8 @@ import time
 import webbrowser
 from pathlib import Path
 
+import re
+
 # Add engine src to sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -34,11 +36,22 @@ from splitter import (
     cut_audio_segments,
     detect_missing_surahs,
     find_env_file_keys,
+    gemini_key_status,
+    save_gemini_keys_to_env,
+    sweep_surah_starts,
     trace_missing_boundary,
+    transcribe_surah_timeline,
 )
 
 console = Console(force_terminal=True, legacy_windows=False)
 cfg = ConfigManager()
+
+_MUROTTAL_RE = re.compile(r"murottal|juz\s*30|juz\s*amma|juz30|tilawah|qari|recit|al-?qur'?an", re.I)
+
+
+def looks_like_murottal(*texts):
+    """Heuristik: judul/channel/deskripsi mengarah ke video murottal Juz."""
+    return any(_MUROTTAL_RE.search(str(t) or "") for t in texts)
 
 FORMAT_OPTIONS = [
     ("1", "1080p", "1080p Full HD (MP4 - Rekomendasi)", "video"),
@@ -83,7 +96,7 @@ def format_duration(seconds):
     return f"{mins:02d}:{secs:02d}"
 
 def render_header():
-    header_text = "[bold cyan]MINI YOUTUBE DOWNLOADER (v1.1)[/bold cyan]\n[dim white]Video & High-Quality Audio Downloader (MP3 320k, FLAC, M4A, 4K) • Potong per Surah/Chapter[/dim white]\n\n[bold yellow]Crafted with care by SnipGeek - https://snipgeek.com/[/bold yellow]"
+    header_text = "[bold cyan]MINI YOUTUBE DOWNLOADER (v1.2)[/bold cyan]\n[dim white]Video & High-Quality Audio Downloader (MP3 320k, FLAC, M4A, 4K) • Potong per Surah/Chapter[/dim white]\n\n[bold yellow]Crafted with care by SnipGeek - https://snipgeek.com/[/bold yellow]"
     console.print(Panel(header_text, border_style="cyan", box=box.ASCII, expand=False))
 
 BROWSER_CHOICES = ["chrome", "edge", "firefox", "brave", "vivaldi", "opera", "safari", ""]
@@ -103,6 +116,7 @@ def render_status_bar():
     t.add_row("[bold blue]Engine FFmpeg:[/bold blue]", ffmpeg_stat)
     t.add_row("[bold cyan]Cookies Browser:[/bold cyan]", cookies_stat)
     t.add_row("[bold yellow]Total Unduhan:[/bold yellow]", f"[bold]{total_dl} media tersimpan[/bold]")
+    t.add_row("[bold white]Gemini API Key:[/bold white]", gemini_key_status())
     console.print(t)
 
     console.print("[dim]Shortcut: Ketik [bold cyan]'S'[/bold cyan] (Settings/Folder) | [bold cyan]'O'[/bold cyan] (Buka Folder) | [bold cyan]'W'[/bold cyan] (SnipGeek.com) | [bold cyan]'Q'[/bold cyan] (Keluar)[/dim]\n")
@@ -119,9 +133,14 @@ def settings_menu(downloader):
         console.print("[bold cyan][3][/bold cyan] Ubah Default Format / Resolusi")
         console.print("[bold cyan][4][/bold cyan] Kunjungi SnipGeek.com (Tech Tools & Guides)")
         console.print("[bold cyan][5][/bold cyan] Cookies Browser (untuk video yang gagal: bot-check / stream terpotong)")
+        console.print("[bold cyan][6][/bold cyan] Gemini API Key (opsional — untuk fitur potong per surah murottal)")
         console.print("[bold cyan][0][/bold cyan] Kembali ke Halaman Utama\n")
 
-        opt = Prompt.ask("Pilih menu", choices=["1", "2", "3", "4", "5", "0"], default="0")
+        console.print(f"Status Gemini: {gemini_key_status()}")
+        console.print("[dim]Key disimpan lokal di file .env (tidak pernah di-upload / ikut git)."
+                      " Dapatkan key gratis: https://aistudio.google.com/apikey[/dim]\n")
+
+        opt = Prompt.ask("Pilih menu", choices=["1", "2", "3", "4", "5", "6", "0"], default="0")
 
         if opt == "0":
             break
@@ -166,6 +185,20 @@ def settings_menu(downloader):
             else:
                 console.print("[bold green]Cookies dimatikan (mode normal).[/bold green]")
             time.sleep(1)
+        elif opt == "6":
+            keys_text = Prompt.ask(
+                "Paste Gemini API Key Anda (1 atau beberapa, dipisah koma). [Enter] untuk batal")
+            if not keys_text.strip():
+                console.print("[bold yellow]Dibatalkan; key tidak diubah.[/bold yellow]")
+                time.sleep(1)
+                continue
+            if save_gemini_keys_to_env(keys_text):
+                console.print("[bold green]✓ Gemini API Key disimpan di .env (lokal, tidak ikut git).[/bold green]")
+                console.print("[dim]Kini fitur potong per surah murottal siap dipakai.[/dim]")
+            else:
+                console.print("[bold red]✗ Gagal menyimpan key. Cek izin tulis folder project.[/bold red]")
+            time.sleep(1)
+
 
 def render_format_menu():
     table = Table(title="[bold yellow]PILIHAN FORMAT & KUALITAS[/bold yellow]", box=box.ASCII, expand=False)
@@ -371,6 +404,7 @@ def main():
             # ── ✂️ Opsi: potong per chapter/surah jadi MP3 ────────────────────
             chapters = chapters_from_info(info)
             do_split = False
+            auto_detect_surah = False
             if chapters and len(chapters) > 1:
                 n_ch = len(chapters)
                 console.print(f"[bold cyan]✂️ Video ini punya {n_ch} chapter[/bold cyan] "
@@ -378,10 +412,22 @@ def main():
                 do_split = Confirm.ask(
                     f"Potong video jadi file MP3 per surah/chapter (skip Opening)?",
                     default=False)
+            elif (not chapters
+                  and cfg.get("gemini_trace", True)
+                  and looks_like_murottal(title, channel)
+                  and find_env_file_keys()):
+                # Video tanpa chapter (mis. murottal Juz 30 tanpa timestamp di
+                # deskripsi) → deteksi semua surah via Gemini dari audio.
+                console.print("[bold cyan]🔍 Video ini terdeteksi sebagai murottal tanpa chapter.[/bold cyan] "
+                              "[dim]Surah bisa dideteksi otomatis dari audio via Gemini.[/dim]")
+                do_split = Confirm.ask(
+                    "Deteksi otomatis semua surah via Gemini, lalu potong jadi MP3 per surah?",
+                    default=False)
+                auto_detect_surah = do_split
 
             if do_split:
-                # Alur potong: unduh audio mentah sekali → deteksi gap surah →
-                # (opsional) Gemini trace → potong tiap segmen → MP3.
+                # Alur potong: unduh audio mentah sekali → (bila perlu) deteksi
+                # surah dari audio → deteksi gap → potong tiap segmen → MP3.
                 bitrate = int(cfg.get("cut_bitrate", 320) or 320)
                 skip_opening = bool(cfg.get("skip_opening", True))
                 sub = downloader.sanitize_title(title)
@@ -396,12 +442,38 @@ def main():
                 target_saved_folder = src_dir
                 console.print(f"[dim]Audio sumber: [underline]{os.path.basename(src_file)}[/underline][/dim]")
 
+                # Mode auto-detect: video tanpa chapter → transkripsi word-level
+                # (presisi) lalu petakan ke surah; fallback: sweep audio per-chunk.
+                if auto_detect_surah:
+                    dur = int(info.get("duration") or 0)
+                    keys = find_env_file_keys()
+                    console.print(f"[bold cyan]Menganalisis audio ({format_duration(dur)}) via Gemini (transkripsi kata-per-kata)...[/bold cyan]")
+                    timeline = transcribe_surah_timeline(src_file, keys, dur)
+                    if len(timeline) < 2:
+                        console.print("[yellow]Transkripsi kurang memadai — fallback ke sweep audio per-chunk...[/yellow]")
+                        timeline = sweep_surah_starts(src_file, keys, dur)
+                    if len(timeline) < 2:
+                        console.print("[bold red]Deteksi surah gagal (kurang dari 2 surah teridentifikasi).[/bold red]")
+                        try:
+                            os.remove(src_file)
+                        except Exception:
+                            pass
+                        continue
+                    # Susun chapters sintetis dari timeline (end = start surah berikutnya)
+                    chapters = []
+                    for i, t in enumerate(timeline):
+                        end = timeline[i + 1]["start"] if i + 1 < len(timeline) else dur
+                        chapters.append({"title": t["title"], "start": t["start"], "end": end})
+                    skip_opening = False  # tidak ada chapter Opening sintetis
+                    names = ", ".join(c["title"] for c in chapters[:5])
+                    console.print(f"[green]✓ {len(chapters)} surah terdeteksi:[/green] {names}{'…' if len(chapters) > 5 else ''}")
+
                 # Deteksi surah Juz Amma yang tidak punya timestamp (gap)
                 resolved_gaps = []
                 if cfg.get("gemini_trace", True):
                     gaps = detect_missing_surahs(chapters)
                     if gaps:
-                        console.print(f"[yellow]⚠ {len(gaps)} surah tanpa timestamp di urutan kanonik → verifikasi via Gemini...[/yellow]")
+                        console.print(f"[yellow]⚠ {len(gaps)} surah belum terverifikasi di urutan kanonik → verifikasi via Gemini...[/yellow]")
                         keys = find_env_file_keys()
                         for gap in gaps:
                             console.print(f"  ↻ {gap['title']} [dim](cek window {format_duration(int(gap['prev_start']))}–{format_duration(int(gap['next_start']))})[/dim]")

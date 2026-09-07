@@ -20,12 +20,18 @@ import re
 import shutil
 import subprocess
 import time
+import base64
+import json
 from pathlib import Path
+from urllib.parse import quote
 
 try:
     import requests  # sudah ada di requirements.txt mini-YT
 except ImportError:  # pragma: no cover
     requests = None
+
+GEN_BASE = "https://generativelanguage.googleapis.com/v1beta"
+INTERACTIONS_URL = f"{GEN_BASE}/interactions"
 
 # ─── Lokasi ffmpeg ────────────────────────────────────────────────────────────
 
@@ -82,7 +88,7 @@ JUZ_AMMA = [
     {"no": 91,  "title": "Ash Shams",    "aliases": ["ash shams", "as syams", "asy syams", "ash-shams", "syams", "shams"]},
     {"no": 92,  "title": "Al Layl",      "aliases": ["al lail", "al layl", "al-lail", "lail", "layl"]},
     {"no": 93,  "title": "Ad Duha",      "aliases": ["ad dhuha", "ad duha", "ad-duha", "duha", "dhuha"]},
-    {"no": 94,  "title": "Ash Sharh",    "aliases": ["ash sharh", "al insyirah", "al inshirah", "ash-sharh", "insyirah", "inshirah"]},
+    {"no": 94,  "title": "Ash Sharh",  "display": "Al Insyirah", "aliases": ["ash sharh", "al insyirah", "al inshirah", "ash-sharh", "insyirah", "inshirah"]},
     {"no": 95,  "title": "At Tin",       "aliases": ["at tin", "attin"]},
     {"no": 96,  "title": "Al 'Alaq",     "aliases": ["al alaq", "al-'alaq", "al 'alaq", "alaq"]},
     {"no": 97,  "title": "Al Qadr",      "aliases": ["al qadr", "al-qadr", "qadr"]},
@@ -99,7 +105,7 @@ JUZ_AMMA = [
     {"no": 108, "title": "Al Kawthar",   "aliases": ["al kawthar", "al khautsar", "al-kauthar", "kawthar", "khautsar"]},
     {"no": 109, "title": "Al Kafirun",   "aliases": ["al kafirun", "al-kafirun", "kafirun"]},
     {"no": 110, "title": "An Nasr",      "aliases": ["an nasr", "al nashr", "an-nasr", "nasr", "nashr"]},
-    {"no": 111, "title": "Al Masad",     "aliases": ["al lahab", "al masad", "al-lahab", "lahab", "masad"]},
+    {"no": 111, "title": "Al Masad",     "display": "Al Lahab", "aliases": ["al lahab", "al masad", "al-lahab", "lahab", "masad"]},
     {"no": 112, "title": "Al Ikhlas",    "aliases": ["al ikhlas", "al-ikhlas", "ikhlas"]},
     {"no": 113, "title": "Al Falaq",     "aliases": ["al falaq", "al-falaq", "falaq"]},
     {"no": 114, "title": "An Nas",       "aliases": ["an nas", "an-nas", "annas", "nas"]},
@@ -164,7 +170,7 @@ def detect_missing_surahs(chapters, video_duration=None):
             if entry:
                 gaps.append({
                     "no": entry["no"],
-                    "title": f"Surah {entry['title']}",
+                    "title": f"Surah {surah_display(entry)}",
                     "prev_title": a["raw_title"],
                     "prev_start": a["start"],
                     "next_start": b["start"],
@@ -219,6 +225,53 @@ def find_env_file_keys():
         except Exception:
             continue
     return keys
+
+
+def _repo_env_path():
+    """Lokasi .env utama milik mini-YT (repo root) — dibuat bila belum ada."""
+    return ENGINE_DIR.parent / ".env"
+
+
+def save_gemini_keys_to_env(keys_text):
+    """Simpan key Gemini ke <repo>/.env (GEMINI_API_KEYS).
+
+    File .env TIDAK ikut ke git (lihat .gitignore). Beberapa key dipisah koma
+    (opsional — 1 key saja sudah cukup untuk free tier).
+    """
+    env_path = _repo_env_path()
+    cleaned = "".join(
+        ch for ch in (keys_text or "").strip() if ch.isalnum() or ch in ",_-."
+    ).strip(", ")
+    if not cleaned:
+        return False
+    content = ""
+    if env_path.exists():
+        try:
+            content = env_path.read_text(encoding="utf-8", errors="ignore")
+        except Exception:
+            content = ""
+    lines = [ln for ln in content.splitlines() if not ln.strip().startswith("GEMINI_API_KEYS=")]
+    lines.append(f"GEMINI_API_KEYS={cleaned}")
+    try:
+        env_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        return True
+    except Exception:
+        return False
+
+
+def gemini_key_status():
+    """Status ringkas untuk UI: jumlah key + petunjuk bila belum diatur."""
+    keys = find_env_file_keys()
+    if not keys:
+        return "[dim]belum diatur (opsional — untuk fitur potong per surah)[/dim]"
+    n = len(keys)
+    preview = ", ".join(f"…{k[-4:]}" for k in keys[:2])
+    label = f"[bold green]{n} key aktif[/bold green]"
+    if n > 2:
+        label += f" ({preview}, …)"
+    elif keys:
+        label += f" ({preview})"
+    return label
 
 
 def _extract_window(source, win_start, win_end, out_opus):
@@ -301,13 +354,11 @@ def trace_missing_boundary(source, win_start, win_end, missing_title, keys, mode
     )
 
     target_no = match_surah(missing_title)
-    last_err = None
     try:
         for model in models:
             for key in keys:
                 try:
                     text = _gemini_generate(model, key, b64, "audio/ogg", prompt)
-                    import json
                     arr = json.loads(text.strip())
                     if not isinstance(arr, list):
                         raise ValueError("response bukan array")
@@ -327,8 +378,7 @@ def trace_missing_boundary(source, win_start, win_end, missing_title, keys, mode
                             return {"status": "found", "start": abs_start}, model
                     # Tidak ditemukan di daftar → surah memang tidak direkam
                     return {"status": "absent", "start": None}, model
-                except Exception as e:
-                    last_err = str(e)
+                except Exception:
                     continue
     finally:
         try:
@@ -337,6 +387,333 @@ def trace_missing_boundary(source, win_start, win_end, missing_title, keys, mode
         except Exception:
             pass
     return None
+
+
+# ─── Sweep otomatis: deteksi semua surah dari audio (video tanpa chapter) ─────
+
+def _parse_gemini_json(text):
+    """Parse JSON dari respons Gemini, toleran terhadap markdown fence."""
+    raw = (text or "").strip()
+    if raw.startswith("```"):
+        raw = re.sub(r"^```[a-zA-Z]*\n?|```\s*$", "", raw).strip()
+    try:
+        return json.loads(raw)
+    except Exception:
+        # coba ambil substring array/objek pertama
+        m = re.search(r"[\[\{].*[\]\}]", raw, re.DOTALL)
+        if m:
+            try:
+                return json.loads(m.group(0))
+            except Exception:
+                return None
+        return None
+
+
+def surah_display(entry):
+    """Nama populer surah untuk label file/pesan (fallback ke title kanonik)."""
+    return entry.get("display") or entry["title"]
+
+
+def sweep_surah_starts(source, keys, duration, chunk_sec=600, models=None):
+    """Deteksi timeline surah dari audio murottal via Gemini (tanpa chapter).
+
+    Audio dipotong per chunk (mono opus, default 600s) lalu tiap chunk dikirim
+    dengan prompt NETRAL: daftar surah yang MULAI dibaca + offset awal. Hasil
+    digabung lintas chunk; duplikat surah (muncul di dua chunk saat melewati
+    batas chunk) dipilih yang offset-nya paling awal.
+
+    Return list sorted by no kanonik:
+      [{"no": 78, "title": "Surah An Naba", "start": <abs>}, ...]
+    """
+    models = models or ["gemini-3.7-flash", "gemini-2.5-flash"]
+    if not keys or not duration or duration <= 0:
+        return []
+
+    prompt = (
+        "Kamu menerima potongan audio murottal Al-Qur'an (bacaan surah "
+        "berurutan, kemungkinan Juz 30 / Juz Amma).\n"
+        "Identifikasi surah-surah yang MULAI dibaca di dalam audio ini "
+        "(basmalah/ayat pertamanya), lengkap dengan offset awal dalam DETIK "
+        "(float, relatif dari detik 0 audio ini).\n"
+        "Jika sebuah surah sudah mulai SEBELUM audio ini, abaikan.\n"
+        "Balas HANYA JSON array: "
+        "[{\"surah\": \"<nama surah>\", \"start_offset_seconds\": <float>}]"
+    )
+
+    found = {}  # no kanonik -> start absolut terbaik (paling awal)
+    chunk = max(120, int(chunk_sec))
+    win_start = 0
+    while win_start < duration:
+        win_end = min(duration, win_start + chunk)
+        tmp_opus = os.path.join(
+            os.path.dirname(source) or ".",
+            f"_sweep_{int(time.time())}_{int(win_start)}.opus",
+        )
+        try:
+            _extract_window(source, win_start, win_end, tmp_opus)
+            import base64
+            with open(tmp_opus, "rb") as f:
+                b64 = base64.b64encode(f.read()).decode("ascii")
+        except Exception:
+            win_start = win_end
+            continue
+
+        chunk_result = None
+        try:
+            for model in models:
+                for key in keys:
+                    try:
+                        text = _gemini_generate(model, key, b64, "audio/ogg", prompt)
+                        parsed = _parse_gemini_json(text)
+                        if not isinstance(parsed, list):
+                            raise ValueError("response bukan array")
+                        chunk_result = parsed
+                        break
+                    except Exception:
+                        continue
+                if chunk_result is not None:
+                    break
+        finally:
+            try:
+                if os.path.exists(tmp_opus):
+                    os.remove(tmp_opus)
+            except Exception:
+                pass
+
+        if chunk_result is None:
+            win_start = win_end
+            continue  # chunk gagal — lanjut chunk berikutnya
+
+        for item in chunk_result:
+            try:
+                name = str(item.get("surah") or "")
+                entry = match_surah(name)
+                if not entry:
+                    continue
+                offset = float(item.get("start_offset_seconds") or 0)
+                abs_start = win_start + offset
+                if abs_start < 0 or abs_start > duration:
+                    continue
+                no = entry["no"]
+                if no not in found or abs_start < found[no]["start"]:
+                    found[no] = {
+                        "no": no,
+                        "title": f"Surah {surah_display(entry)}",
+                        "start": abs_start,
+                    }
+            except Exception:
+                continue
+        win_start = win_end
+
+    return [found[k] for k in sorted(found)]
+
+
+# ─── Transkripsi word-level (Interactions API) untuk deteksi surah presisi ───
+
+INTERACTIONS_MODEL = "gemini-3.5-transcribe"
+
+
+def _parse_offset_seconds(v):
+    """Offset Interactions bisa float atau string seperti '92.500s'."""
+    if v is None:
+        return 0.0
+    if isinstance(v, (int, float)):
+        return float(v)
+    m = re.search(r"([\d.]+)\s*s?", str(v))
+    return float(m.group(1)) if m else 0.0
+
+
+def _interactions_transcribe_chunk(audio_b64, key, model=INTERACTIONS_MODEL, lang="ar"):
+    """Transkripsi word-level via Interactions API (port dari ClipForge).
+
+    Return list [{s, e, t}] waktu LOKAL chunk (detik float), atau [] bila gagal.
+    """
+    if requests is None:
+        raise RuntimeError("requests tidak terpasang")
+    body = {
+        "model": model,
+        "input": [{"type": "audio", "data": audio_b64, "mime_type": "audio/ogg"}],
+        "generation_config": {
+            "transcription_config": {
+                "language_codes": [lang],
+                "mode": {
+                    "type": "verbatim",
+                    "diarization_mode": "none",
+                    "timestamp_granularities": ["word"],
+                },
+            }
+        },
+    }
+    url = f"{INTERACTIONS_URL}?key={quote(key)}"
+    resp = requests.post(url, json=body, timeout=600)
+    if resp.status_code != 200:
+        raise RuntimeError(f"interactions HTTP {resp.status_code}: {resp.text[:200]}")
+    data = resp.json()
+
+    words = []
+    steps = data.get("steps") if isinstance(data, dict) else None
+    if not isinstance(steps, list):
+        return words
+    for step in steps:
+        if not isinstance(step, dict) or step.get("type") != "model_output":
+            continue
+        contents = step.get("content") or []
+        if not isinstance(contents, list):
+            continue
+        for c in contents:
+            if not isinstance(c, dict):
+                continue
+            anns = c.get("annotations") or []
+            if not isinstance(anns, list):
+                continue
+            for a in anns:
+                if not isinstance(a, dict) or a.get("type") != "word_info":
+                    continue
+                t = str(a.get("text") or "").strip()
+                if not t:
+                    continue
+                s = _parse_offset_seconds(a.get("start_offset"))
+                e = _parse_offset_seconds(a.get("end_offset")) or s
+                if e < s:
+                    e = s
+                words.append({"s": s, "e": e, "t": t})
+    return words
+
+
+def transcribe_words(source, keys, duration, chunk_sec=2700, lang="ar"):
+    """Transkripsi word-level seluruh audio (di-chunk, mis. 45 menit/chunk).
+
+    Return list [{s, e, t}] dengan s/e GLOBAL (detik video), terurut.
+    Return [] bila semua chunk gagal.
+    """
+    if not keys or not duration or duration <= 0:
+        return []
+    chunk = max(300, int(chunk_sec))
+    all_words = []
+    win_start = 0
+    while win_start < duration:
+        win_end = min(duration, win_start + chunk)
+        tmp_opus = os.path.join(
+            os.path.dirname(source) or ".",
+            f"_tr_{int(time.time())}_{int(win_start)}.opus",
+        )
+        try:
+            _extract_window(source, win_start, win_end, tmp_opus)
+            with open(tmp_opus, "rb") as f:
+                b64 = base64.b64encode(f.read()).decode("ascii")
+        except Exception:
+            win_start = win_end
+            continue
+
+        words_local = []
+        try:
+            for key in keys:
+                try:
+                    words_local = _interactions_transcribe_chunk(b64, key, lang=lang)
+                    if words_local:
+                        break
+                except Exception:
+                    continue
+        finally:
+            try:
+                if os.path.exists(tmp_opus):
+                    os.remove(tmp_opus)
+            except Exception:
+                pass
+
+        for w in words_local:
+            all_words.append({"s": w["s"] + win_start, "e": w["e"] + win_start, "t": w["t"]})
+        win_start = win_end
+
+    all_words.sort(key=lambda w: w["s"])
+    return all_words
+
+
+def map_words_to_surahs(words, keys, duration, models=None):
+    """Petakan transkrip word-level (Arab) → batas surah Juz Amma 78-114.
+
+    Panggilan TEXT-only — model membaca kata + timestamp ASR (presisi
+    sub-detik) lalu mengembalikan offset awal tiap surah yang terbaca.
+    Prompt memakai few-shot + anchor contoh agar model tidak malas balas [].
+
+    Return list sorted by no: [{no, title, start}], atau [] bila gagal.
+    """
+    models = models or ["gemini-3.7-flash", "gemini-2.5-flash"]
+    if not keys or not words:
+        return []
+    if requests is None:
+        raise RuntimeError("requests tidak terpasang")
+
+    lines = [f"{w['s']:.2f}\t{w['t']}" for w in words]
+    transcript = "\n".join(lines)
+
+    # Contoh ayat pertama yang khas untuk 4 surah awal (few-shot anchor)
+    prompt = (
+        "Ini transkrip kata-per-kata ber-timestamp dari rekaman murottal "
+        "Al-Qur'an Juz Amma (surah 78-114, dibaca berurutan dari awal rekaman). "
+        "Baris: <detik_mulai>\\t<kata Arab>.\n\n"
+        "Transkrip:\n"
+        f"{transcript}\n\n"
+        "Kenali di detik berapa setiap surah DIMULAI (basmalah/ayat pertama "
+        "yang khas). Surah dibaca berurutan 78→114. Contoh anchor:\n"
+        "  - 78 An Naba: 'عما يتساءلون / عن النبا العظيم'\n"
+        "  - 79 An Nazi'at: 'والنازعات غرقا'\n"
+        "  - 80 'Abasa: 'عبس وتولى'\n"
+        "  - 81 At Takwir: 'اذا الشمس كورت'\n\n"
+        "Keluarkan JSON array semua surah yang kamu temukan di transkrip ini:\n"
+        '[{"no": 78, "start_offset_seconds": 21.7}, ...]\n'
+        "Jangan kosong — minimal surah pertama (78 An Naba) pasti ada. Lewati "
+        "surah yang benar-benar tidak terbaca."
+    )
+
+    for model in models:
+        for key in keys:
+            try:
+                url = f"{GEN_BASE}/models/{model}:generateContent?key={quote(key)}"
+                body = {
+                    "contents": [{"parts": [{"text": prompt}]}],
+                    "generationConfig": {"temperature": 0},
+                }
+                resp = requests.post(url, json=body, timeout=600)
+                if resp.status_code != 200:
+                    raise RuntimeError(f"HTTP {resp.status_code}: {resp.text[:150]}")
+                parts = (resp.json().get("candidates") or [{}])[0].get("content", {}).get("parts") or []
+                text = "".join(p.get("text", "") for p in parts)
+                arr = _parse_gemini_json(text)
+                if not isinstance(arr, list):
+                    raise ValueError("response bukan array")
+                result = []
+                for item in arr:
+                    try:
+                        no = int(item.get("no") or 0)
+                        entry = next((s for s in JUZ_AMMA if s["no"] == no), None)
+                        if not entry:
+                            continue
+                        start = float(item.get("start_offset_seconds") or 0)
+                        if 0 <= start <= (duration or start + 1):
+                            result.append({"no": no, "title": f"Surah {surah_display(entry)}", "start": start})
+                    except Exception:
+                        continue
+                if result:
+                    return sorted(result, key=lambda r: r["no"])
+            except Exception:
+                continue
+    return []
+
+
+def transcribe_surah_timeline(source, keys, duration, chunk_sec=2700):
+    """Pipeline transkripsi penuh: word-level → petakan surah → timeline.
+
+    Return list [{no, title, start}] sorted by no (bisa kurang dari 37 bila
+    sebagian surah tak terbaca), atau [] bila gagal total.
+    """
+    if not keys or not duration:
+        return []
+    words = transcribe_words(source, keys, duration, chunk_sec=chunk_sec)
+    if not words:
+        return []
+    timeline = map_words_to_surahs(words, keys, duration)
+    return timeline
 
 
 # ─── Potong per segmen → MP3 ──────────────────────────────────────────────────

@@ -11,3 +11,7 @@ __pycache__/
 _engine/config.json
 .zcode/
 logs/
+
+# API key lokal pengguna (jangan pernah masuk git)
+.env
+.env.local
