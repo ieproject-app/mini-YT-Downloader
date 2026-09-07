@@ -50,21 +50,30 @@ ketukan — app menutup, updater berjalan di background, lalu Anda jalankan
 
 ## 📸 Screenshot
 
-**Pertama kali — paste Gemini API key langsung di jembatan K:**
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <a href="screenshots/01-first-run-gemini-key-setup.png"><img src="screenshots/01-first-run-gemini-key-setup.png" alt="First run: Gemini key setup" width="100%"></a><br>
+      <sub><b>Pertama kali — paste Gemini API key langsung di jembatan K</b></sub>
+    </td>
+    <td align="center" width="50%">
+      <a href="screenshots/02-key-installed-ready.png"><img src="screenshots/02-key-installed-ready.png" alt="Key installed" width="100%"></a><br>
+      <sub><b>Key terpasang — fitur potong per surah siap</b></sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="screenshots/03-playlist-download-progress.png"><img src="screenshots/03-playlist-download-progress.png" alt="Playlist download progress" width="100%"></a><br>
+      <sub><b>Unduhan playlist berjalan (56/56 item)</b></sub>
+    </td>
+    <td align="center">
+      <a href="screenshots/04-playlist-download-complete.png"><img src="screenshots/04-playlist-download-complete.png" alt="Playlist download complete" width="100%"></a><br>
+      <sub><b>Selesai — semua item tersimpan rapi</b></sub>
+    </td>
+  </tr>
+</table>
 
-![First run: Gemini key setup](screenshots/01-first-run-gemini-key-setup.png)
-
-**Key terpasang — fitur potong per surah siap:**
-
-![Key installed](screenshots/02-key-installed-ready.png)
-
-**Unduhan playlist berjalan (56/56 item):**
-
-![Playlist download progress](screenshots/03-playlist-download-progress.png)
-
-**Selesai — semua item tersimpan rapi:**
-
-![Playlist download complete](screenshots/04-playlist-download-complete.png)
+*Klik screenshot untuk melihat ukuran penuh.*
 
 ---
 

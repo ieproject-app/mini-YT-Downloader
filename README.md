@@ -50,21 +50,30 @@ update — the app closes, the updater runs in the background, and you start
 
 ## 📸 Screenshots
 
-**First run — paste your Gemini API key right into the K bridge:**
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <a href="screenshots/01-first-run-gemini-key-setup.png"><img src="screenshots/01-first-run-gemini-key-setup.png" alt="First run: Gemini key setup" width="100%"></a><br>
+      <sub><b>First run — paste your Gemini API key right into the K bridge</b></sub>
+    </td>
+    <td align="center" width="50%">
+      <a href="screenshots/02-key-installed-ready.png"><img src="screenshots/02-key-installed-ready.png" alt="Key installed" width="100%"></a><br>
+      <sub><b>Key installed — ready for the per-surah cut feature</b></sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="screenshots/03-playlist-download-progress.png"><img src="screenshots/03-playlist-download-progress.png" alt="Playlist download progress" width="100%"></a><br>
+      <sub><b>Playlist download in progress (56/56 items)</b></sub>
+    </td>
+    <td align="center">
+      <a href="screenshots/04-playlist-download-complete.png"><img src="screenshots/04-playlist-download-complete.png" alt="Playlist download complete" width="100%"></a><br>
+      <sub><b>All done — every item saved neatly</b></sub>
+    </td>
+  </tr>
+</table>
 
-![First run: Gemini key setup](screenshots/01-first-run-gemini-key-setup.png)
-
-**Key installed — ready for the per-surah cut feature:**
-
-![Key installed](screenshots/02-key-installed-ready.png)
-
-**Playlist download in progress (56/56 items):**
-
-![Playlist download progress](screenshots/03-playlist-download-progress.png)
-
-**All done — every item saved neatly:**
-
-![Playlist download complete](screenshots/04-playlist-download-complete.png)
+*Click a screenshot to view it full size.*
 
 ---
 
