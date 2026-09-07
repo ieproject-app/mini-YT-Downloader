@@ -37,9 +37,12 @@ memilih opsi potong per surah.
 
 ### Cara memasukkan key ke aplikasi
 **Lewat menu (paling mudah):**
-1. Jalankan `run.bat`.
-2. Ketik `S` (Settings) → pilih menu **[6] Gemini API Key**.
-3. Paste key Anda → Enter. Status berubah menjadi *"1 key aktif"* di baris status.
+1. Jalankan `run.bat` — saat pertama kali dibuka, aplikasi menawarkan memasang key.
+2. Atau ketik `S` (Settings) → pilih menu **[6] Gemini API Key** → pilih [1] Paste key, [2] buka halaman key, atau [3] buka tutorial blog.
+3. Status berubah menjadi *"1 key aktif"* di baris status.
+
+> 📖 **Panduan bergambar langkah demi langkah** tersedia di blog SnipGeek:
+> [https://snipgeek.com/](https://snipgeek.com/) *(tautan artikel tutorial API key)*
 
 **Manual (opsional):** salin file `.env.example` menjadi `.env` di folder yang
 sama, lalu isi:

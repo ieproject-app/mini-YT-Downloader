@@ -56,6 +56,37 @@ def detect_playlist(url: str) -> dict:
         pass
     return {"kind": "video_only", "video_url": sanitize_youtube_url(url)}
 
+YOUTUBE_HOSTS = (
+    "youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com",
+    "youtu.be", "www.youtu.be", "youtube-nocookie.com", "www.youtube-nocookie.com",
+)
+
+
+def normalize_media_url(url: str) -> str:
+    """Tambahkan https:// bila user paste URL YouTube tanpa scheme."""
+    url = (url or "").strip()
+    if not url or "://" in url:
+        return url
+    first = url.split("/", 1)[0].lower()
+    if first in YOUTUBE_HOSTS:
+        return "https://" + url
+    return url
+
+
+def is_supported_youtube_url(url: str) -> bool:
+    """True bila URL adalah media YouTube (watch/shorts/youtu.be/playlist).
+
+    Mencegah yt-dlp memproses host lain (mis. google.com/aistudio) yang hanya
+    menghasilkan error 'Unsupported URL' yang membingungkan pengguna.
+    """
+    try:
+        parsed = urllib.parse.urlparse((url or "").strip())
+    except Exception:
+        return False
+    host = (parsed.netloc or "").lower()
+    return parsed.scheme in ("http", "https") and host in YOUTUBE_HOSTS
+
+
 def is_channel_url(url: str) -> bool:
     """Detect channel/homepage URLs that are neither a video nor a playlist.
 

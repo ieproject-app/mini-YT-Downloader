@@ -29,7 +29,7 @@ from rich import box
 from rich.prompt import Prompt, Confirm
 
 from config_manager import ConfigManager
-from downloader import YTDownloader, sanitize_youtube_url, detect_playlist, is_channel_url
+from downloader import YTDownloader, sanitize_youtube_url, detect_playlist, is_channel_url, normalize_media_url, is_supported_youtube_url
 from splitter import (
     build_cut_segments,
     chapters_from_info,
@@ -45,6 +45,32 @@ from splitter import (
 
 console = Console(force_terminal=True, legacy_windows=False)
 cfg = ConfigManager()
+
+# ── Tautan onboarding Gemini API key ──
+AISTUDIO_APIKEY_URL = "https://aistudio.google.com/apikey"
+# TODO(blog): ganti URL di bawah dengan artikel tutorial lengkap setelah dipublikasikan
+TUTORIAL_API_KEY_URL = "https://snipgeek.com/"
+
+
+def prompt_install_gemini_key(title="Pasang Gemini API Key"):
+    """Tawaran inline memasang Gemini API key (dipakai di onboarding & konteks).
+
+    Return True bila key berhasil disimpan.
+    """
+    console.print(f"\n[bold magenta]🔑 {title}[/bold magenta]")
+    console.print(f"Panduan lengkap: [underline]{TUTORIAL_API_KEY_URL}[/underline]")
+    console.print(f"[dim]Key gratis: buka [underline]{AISTUDIO_APIKEY_URL}[/underline] → login Google → Create API key → Copy.[/dim]")
+    if not Confirm.ask("Masukkan / paste API key sekarang?", default=False):
+        return False
+    keys_text = Prompt.ask("Paste Gemini API Key (beberapa key dipisah koma)")
+    if not keys_text.strip():
+        console.print("[yellow]Dibatalkan; key tidak diubah.[/yellow]")
+        return False
+    if save_gemini_keys_to_env(keys_text):
+        console.print("[bold green]✓ Gemini API Key tersimpan di .env (lokal, tidak ikut git).[/bold green]")
+        return True
+    console.print("[bold red]✗ Gagal menyimpan key. Cek izin tulis folder project.[/bold red]")
+    return False
 
 _MUROTTAL_RE = re.compile(r"murottal|juz\s*30|juz\s*amma|juz30|tilawah|qari|recit|al-?qur'?an", re.I)
 
@@ -119,7 +145,7 @@ def render_status_bar():
     t.add_row("[bold white]Gemini API Key:[/bold white]", gemini_key_status())
     console.print(t)
 
-    console.print("[dim]Shortcut: Ketik [bold cyan]'S'[/bold cyan] (Settings/Folder) | [bold cyan]'O'[/bold cyan] (Buka Folder) | [bold cyan]'W'[/bold cyan] (SnipGeek.com) | [bold cyan]'Q'[/bold cyan] (Keluar)[/dim]\n")
+    console.print("[dim]Shortcut: Ketik [bold cyan]'S'[/bold cyan] (Settings/Folder) | [bold cyan]'O'[/bold cyan] (Buka Folder) | [bold cyan]'K'[/bold cyan] (Gemini API Key) | [bold cyan]'W'[/bold cyan] (SnipGeek.com) | [bold cyan]'Q'[/bold cyan] (Keluar)[/dim]\n")
 
 def settings_menu(downloader):
     while True:
@@ -186,17 +212,26 @@ def settings_menu(downloader):
                 console.print("[bold green]Cookies dimatikan (mode normal).[/bold green]")
             time.sleep(1)
         elif opt == "6":
-            keys_text = Prompt.ask(
-                "Paste Gemini API Key Anda (1 atau beberapa, dipisah koma). [Enter] untuk batal")
-            if not keys_text.strip():
-                console.print("[bold yellow]Dibatalkan; key tidak diubah.[/bold yellow]")
-                time.sleep(1)
-                continue
-            if save_gemini_keys_to_env(keys_text):
-                console.print("[bold green]✓ Gemini API Key disimpan di .env (lokal, tidak ikut git).[/bold green]")
-                console.print("[dim]Kini fitur potong per surah murottal siap dipakai.[/dim]")
-            else:
-                console.print("[bold red]✗ Gagal menyimpan key. Cek izin tulis folder project.[/bold red]")
+            console.print(f"\nStatus Gemini: {gemini_key_status()}")
+            console.print(f"[bold cyan][1][/bold cyan] Pasang / ganti API key (paste)")
+            console.print(f"[bold cyan][2][/bold cyan] Buka halaman ambil key gratis ({AISTUDIO_APIKEY_URL})")
+            console.print(f"[bold cyan][3][/bold cyan] Buka tutorial di blog ({TUTORIAL_API_KEY_URL})")
+            console.print("[bold cyan][0][/bold cyan] Batal")
+            sub = Prompt.ask("Pilih", choices=["1", "2", "3", "0"], default="0")
+            if sub == "1":
+                keys_text = Prompt.ask(
+                    "Paste Gemini API Key Anda (1 atau beberapa, dipisah koma). Kosongkan untuk batal")
+                if not keys_text.strip():
+                    console.print("[bold yellow]Dibatalkan; key tidak diubah.[/bold yellow]")
+                elif save_gemini_keys_to_env(keys_text):
+                    console.print("[bold green]✓ Gemini API Key disimpan di .env (lokal, tidak ikut git).[/bold green]")
+                    console.print("[dim]Kini fitur potong per surah murottal siap dipakai.[/dim]")
+                else:
+                    console.print("[bold red]✗ Gagal menyimpan key. Cek izin tulis folder project.[/bold red]")
+            elif sub == "2":
+                webbrowser.open(AISTUDIO_APIKEY_URL)
+            elif sub == "3":
+                webbrowser.open(TUTORIAL_API_KEY_URL)
             time.sleep(1)
 
 
@@ -249,6 +284,13 @@ def check_snipgeek_milestone(current_count):
 def main():
     downloader = YTDownloader(config_manager=cfg, ffmpeg_dir=str(BIN_DIR) if (BIN_DIR / 'ffmpeg.exe').exists() else None)
 
+    # Onboarding Gemini key — tawarkan sekali saja selama belum ada key tersimpan
+    if not find_env_file_keys() and not cfg.get("gemini_key_prompted", False):
+        console.print("[bold cyan]💡 Tips:[/bold cyan] fitur [bold]✂️ Potong per Surah (murottal Juz)[/bold] "
+                      "butuh Gemini API key (gratis, opsional).")
+        prompt_install_gemini_key("Onboarding: Gemini API Key (opsional)")
+        cfg.set("gemini_key_prompted", True)
+
     while True:
         render_header()
         render_status_bar()
@@ -275,8 +317,28 @@ def main():
             console.print("[bold green]Membuka https://snipgeek.com/ di browser...[/bold green]")
             time.sleep(1)
             continue
+        elif cmd == 'k':
+            webbrowser.open("https://aistudio.google.com/apikey")
+            console.print("[bold green]Membuka https://aistudio.google.com/apikey di browser...[/bold green]")
+            console.print("Setelah key disalin: ketik [bold cyan]S[/bold cyan] → menu [bold cyan][6][/bold cyan] Gemini API Key untuk memasangnya.")
+            time.sleep(1)
+            continue
         else:
-            input_url = input_url
+            input_url = normalize_media_url(input_url)
+
+        # ---------- Validasi host: hanya YouTube yang didukung ----------
+        if not is_supported_youtube_url(input_url):
+            console.print("\n[bold red]URL bukan link YouTube yang didukung.[/bold red]")
+            console.print("[yellow]Paste link video/playlist YouTube, mis:[/yellow]")
+            console.print("  [dim]https://www.youtube.com/watch?v=XXXXXXXXXXX[/dim]")
+            console.print("  [dim]https://youtu.be/XXXXXXXXXXX[/dim]")
+            low = input_url.lower()
+            if "aistudio.google.com" in low or "accounts.google.com" in low or "ai.google.dev" in low:
+                console.print("\n[cyan]Sepertinya Anda membuka Google AI Studio (untuk Gemini API key).[/cyan]")
+                console.print("Ambil key gratis di: [underline]https://aistudio.google.com/apikey[/underline]")
+                console.print("Lalu masukkan lewat: ketik [bold cyan]S[/bold cyan] → menu [bold cyan][6][/bold cyan] Gemini API Key.")
+            Prompt.ask("\nTekan [Enter] untuk melanjutkan...")
+            continue
 
         # ---------- Deteksi Playlist ----------
         if is_channel_url(input_url):
@@ -412,18 +474,24 @@ def main():
                 do_split = Confirm.ask(
                     f"Potong video jadi file MP3 per surah/chapter (skip Opening)?",
                     default=False)
-            elif (not chapters
-                  and cfg.get("gemini_trace", True)
-                  and looks_like_murottal(title, channel)
-                  and find_env_file_keys()):
+            elif not chapters and cfg.get("gemini_trace", True) and looks_like_murottal(title, channel):
                 # Video tanpa chapter (mis. murottal Juz 30 tanpa timestamp di
                 # deskripsi) → deteksi semua surah via Gemini dari audio.
+                # Bila key belum terpasang → tawaran inline pasang key dulu.
                 console.print("[bold cyan]🔍 Video ini terdeteksi sebagai murottal tanpa chapter.[/bold cyan] "
                               "[dim]Surah bisa dideteksi otomatis dari audio via Gemini.[/dim]")
-                do_split = Confirm.ask(
-                    "Deteksi otomatis semua surah via Gemini, lalu potong jadi MP3 per surah?",
-                    default=False)
-                auto_detect_surah = do_split
+                if not find_env_file_keys():
+                    console.print("[yellow]⚠ Fitur ini butuh Gemini API key (gratis, free tier).[/yellow]")
+                    if prompt_install_gemini_key("Gemini API Key dibutuhkan"):
+                        do_split = Confirm.ask(
+                            "Key terpasang! Deteksi otomatis semua surah sekarang?",
+                            default=False)
+                        auto_detect_surah = do_split
+                else:
+                    do_split = Confirm.ask(
+                        "Deteksi otomatis semua surah via Gemini, lalu potong jadi MP3 per surah?",
+                        default=False)
+                    auto_detect_surah = do_split
 
             if do_split:
                 # Alur potong: unduh audio mentah sekali → (bila perlu) deteksi
@@ -475,10 +543,14 @@ def main():
                     if gaps:
                         console.print(f"[yellow]⚠ {len(gaps)} surah belum terverifikasi di urutan kanonik → verifikasi via Gemini...[/yellow]")
                         keys = find_env_file_keys()
+                        if not keys:
+                            # Tawaran inline: pasang key di tempat agar verifikasi tetap jalan
+                            if prompt_install_gemini_key("Verifikasi butuh Gemini API Key"):
+                                keys = find_env_file_keys()
                         for gap in gaps:
                             console.print(f"  ↻ {gap['title']} [dim](cek window {format_duration(int(gap['prev_start']))}–{format_duration(int(gap['next_start']))})[/dim]")
                             if not keys:
-                                console.print("    [red]✗ Gemini key tidak ditemukan; lanjut tanpa verifikasi.[/red]")
+                                console.print("    [red]✗ Gemini key tidak ditemukan; lanjut tanpa verifikasi (bila perlu pasang via menu S → [6]).[/red]")
                                 continue
                             result, model = trace_missing_boundary(
                                 src_file, gap['prev_start'], gap['next_start'], gap['title'], keys)

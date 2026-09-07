@@ -22,6 +22,8 @@ class ConfigManager:
             "cut_bitrate": 320,
             "skip_opening": True,
             "gemini_trace": True,
+            # Onboarding Gemini key sudah pernah ditawarkan?
+            "gemini_key_prompted": False,
         }
         self.config = self.load()
 
