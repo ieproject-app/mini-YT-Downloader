@@ -1,4 +1,4 @@
-# ⚡ Mini YouTube Downloader (v1.4.1)
+# ⚡ Mini YouTube Downloader (v1.4.2)
 
 Aplikasi downloader YouTube & konverter audio mandiri, super ringan, dan ramah pemula untuk Windows.
 *Crafted with ❤️ by [SnipGeek](https://snipgeek.com/)*
@@ -57,9 +57,10 @@ memilih opsi potong per surah.
 ### Cara memasukkan key ke aplikasi
 **Lewat menu (paling mudah):**
 1. Jalankan `miniyt` (atau `run.bat`).
-2. Saat pertama dibuka, aplikasi menawarkan memasang key — atau ketik `S`
-   (Settings) → **[6] Gemini API Key** → [1] Paste key. Bisa juga [2] membuka
-   halaman key atau [3] membuka tutorial bergambar di blog.
+2. Saat pertama dibuka, aplikasi menawarkan memasang key. Anda juga bisa
+   menekan **`K`** di halaman utama — app membuka halaman key gratis **lalu**
+   langsung meminta paste key-nya (jembatan lengkap).
+   Atau ketik `S` (Settings) → **[6] Gemini API Key** untuk menu yang sama.
 3. Baris status menampilkan *"1 key aktif"* setelah key terpasang.
 
 **Manual (opsional):** salin `.env.example` menjadi `.env` di samping aplikasi lalu isi:
@@ -127,7 +128,7 @@ Lokasi default:
 Proyek ini menggunakan Git tag sebagai titik aman:
 
 - Lihat riwayat commit: `git log --oneline`
-- Kembali ke versi stabil terakhir: `git checkout v1.4.0`
+- Kembali ke versi stabil terakhir: `git checkout v1.4.1`
 - Batalkan commit terakhir: `git revert HEAD`
 - Lihat status file berubah: `git status`
 

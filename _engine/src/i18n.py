@@ -21,7 +21,7 @@ _STRINGS = {
     # ─── EN ───────────────────────────────────────────────────────────────
     "en": {
         # Header & status bar
-        "header.title": "MINI YOUTUBE DOWNLOADER (v1.4.1)",
+        "header.title": "MINI YOUTUBE DOWNLOADER (v1.4.2)",
         "header.subtitle": "Video & High-Quality Audio Downloader (MP3 320k, FLAC, M4A, 4K) • Cut per Surah/Chapter",
         "header.credit": "Crafted with care by SnipGeek - https://snipgeek.com/",
         "status.downloads_folder": "Downloads Folder:",
@@ -142,6 +142,13 @@ _STRINGS = {
         "key.verify_needed": "Verification needs a Gemini API Key",
         "key.status_active": "[bold green]{n} key(s) active[/bold green]",
         "key.status_missing": "[dim]not set (optional — for the per-surah cut feature)[/dim]",
+        "key.bridge.title": "🔑 Gemini API Key",
+        "key.bridge.option_open": "[1] Open the free key page ({url}) — then paste the key here (recommended)",
+        "key.bridge.option_paste": "[2] Paste API key directly (if you already have one)",
+        "key.bridge.option_tutorial": "[3] Open the illustrated blog tutorial ({url})",
+        "key.bridge.cancel": "[0] Cancel",
+        "key.bridge.choose": "Choose",
+        "key.bridge.paste_after": "Paste your Gemini API Key here (or press Enter to skip):",
 
         # Settings menu
         "settings.title": "[bold yellow]SETTINGS & FOLDER[/bold yellow]",
@@ -235,7 +242,7 @@ _STRINGS = {
 
     # ─── ID ───────────────────────────────────────────────────────────────
     "id": {
-        "header.title": "MINI YOUTUBE DOWNLOADER (v1.4.1)",
+        "header.title": "MINI YOUTUBE DOWNLOADER (v1.4.2)",
         "header.subtitle": "Video & High-Quality Audio Downloader (MP3 320k, FLAC, M4A, 4K) • Potong per Surah/Chapter",
         "header.credit": "Crafted with care by SnipGeek - https://snipgeek.com/",
         "status.downloads_folder": "Folder Downloads:",
@@ -351,6 +358,13 @@ _STRINGS = {
         "key.verify_needed": "Verifikasi butuh Gemini API Key",
         "key.status_active": "[bold green]{n} key aktif[/bold green]",
         "key.status_missing": "[dim]belum diatur (opsional — untuk fitur potong per surah)[/dim]",
+        "key.bridge.title": "🔑 Gemini API Key",
+        "key.bridge.option_open": "[1] Buka halaman key gratis ({url}) — lalu paste key-nya di sini (disarankan)",
+        "key.bridge.option_paste": "[2] Paste API key langsung (kalau sudah punya)",
+        "key.bridge.option_tutorial": "[3] Buka tutorial bergambar di blog ({url})",
+        "key.bridge.cancel": "[0] Batal",
+        "key.bridge.choose": "Pilih",
+        "key.bridge.paste_after": "Paste Gemini API Key Anda di sini (atau Enter untuk lewati):",
 
         "settings.title": "[bold yellow]PENGATURAN & FOLDER[/bold yellow]",
         "settings.folder_main": "Folder Utama : [underline]{dir}[/underline]",

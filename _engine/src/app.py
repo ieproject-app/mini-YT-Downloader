@@ -53,7 +53,7 @@ console = Console(force_terminal=True, legacy_windows=False)
 cfg = ConfigManager()
 i18n.set_language(cfg.get("language", "auto"))
 
-APP_VERSION = "1.4.1"
+APP_VERSION = "1.4.2"
 
 # ── Tautan onboarding Gemini API key ──
 AISTUDIO_APIKEY_URL = "https://aistudio.google.com/apikey"
@@ -80,6 +80,39 @@ def prompt_install_gemini_key(title=None):
         return True
     console.print(t("key.save_failed"))
     return False
+
+def gemini_key_bridge():
+    """Jembatan lengkap ambil & pasang key: buka halaman key -> paste ke app.
+
+    Dipakai oleh shortcut 'K' di halaman utama dan Settings [6].
+    """
+    console.print(Panel(t("key.bridge.title"), border_style="magenta", box=box.ASCII))
+    console.print(f"{t('status.gemini_key')} {gemini_key_status()}")
+    console.print(t("key.bridge.option_open", url=AISTUDIO_APIKEY_URL))
+    console.print(t("key.bridge.option_paste"))
+    console.print(t("key.bridge.option_tutorial", url=TUTORIAL_API_KEY_URL))
+    console.print(t("key.bridge.cancel"))
+    choice = Prompt.ask(t("key.bridge.choose"), choices=["1", "2", "3", "0"], default="1")
+
+    if choice == "0":
+        return
+    if choice == "1":
+        # Buka halaman key; setelah user kembali dengan key, langsung prompt paste
+        webbrowser.open(AISTUDIO_APIKEY_URL)
+        console.print(t("main.k_opened"))
+    elif choice == "3":
+        webbrowser.open(TUTORIAL_API_KEY_URL)
+        return
+
+    keys_text = Prompt.ask(t("key.bridge.paste_after")).strip()
+    if not keys_text:
+        console.print(t("key.cancelled"))
+        return
+    if save_gemini_keys_to_env(keys_text):
+        console.print(t("key.saved"))
+        console.print(t("key.ready"))
+    else:
+        console.print(t("key.save_failed"))
 
 _MUROTTAL_RE = re.compile(r"murottal|juz\s*30|juz\s*amma|juz30|tilawah|qari|recit|al-?qur'?an", re.IGNORECASE)
 
@@ -230,25 +263,7 @@ def settings_menu(downloader):
                 console.print(t("settings.cookies.disabled"))
             time.sleep(1)
         elif opt == "6":
-            console.print(f"\n{t('status.gemini_key')} {gemini_key_status()}")
-            console.print(t("settings.gemini.sub1"))
-            console.print(t("settings.gemini.sub2", url=AISTUDIO_APIKEY_URL))
-            console.print(t("settings.gemini.sub3", url=TUTORIAL_API_KEY_URL))
-            console.print(t("settings.gemini.cancel"))
-            sub = Prompt.ask(t("settings.gemini.choose"), choices=["1", "2", "3", "0"], default="0")
-            if sub == "1":
-                keys_text = Prompt.ask(t("settings.gemini.paste_prompt"))
-                if not keys_text.strip():
-                    console.print(t("key.cancelled"))
-                elif save_gemini_keys_to_env(keys_text):
-                    console.print(t("key.saved"))
-                    console.print(t("key.ready"))
-                else:
-                    console.print(t("key.save_failed"))
-            elif sub == "2":
-                webbrowser.open(AISTUDIO_APIKEY_URL)
-            elif sub == "3":
-                webbrowser.open(TUTORIAL_API_KEY_URL)
+            gemini_key_bridge()
             time.sleep(1)
         elif opt == "7":
             ask_language(allow_reask=True)
@@ -352,10 +367,7 @@ def main():
             time.sleep(1)
             continue
         elif cmd == 'k':
-            webbrowser.open(AISTUDIO_APIKEY_URL)
-            console.print(t("main.k_opened"))
-            console.print(t("main.k_hint"))
-            time.sleep(1)
+            gemini_key_bridge()
             continue
         else:
             input_url = normalize_media_url(input_url)
