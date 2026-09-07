@@ -1,4 +1,4 @@
-# ⚡ Mini YouTube Downloader (v1.4.0)
+# ⚡ Mini YouTube Downloader (v1.4.1)
 
 Aplikasi downloader YouTube & konverter audio mandiri, super ringan, dan ramah pemula untuk Windows.
 *Crafted with ❤️ by [SnipGeek](https://snipgeek.com/)*
@@ -108,12 +108,26 @@ Lokasi default:
 
 ---
 
+## ⚖️ Legal & Fair Use
+
+- Tool ini **tidak berafiliasi dengan YouTube atau Google**. YouTube adalah
+  merek dagang milik Google LLC.
+- Unduh konten **hanya untuk penggunaan pribadi** atau jika Anda memiliki hak.
+  Meng-upload ulang atau memonetisasi konten orang lain tanpa izin dapat
+  melanggar hukum hak cipta dan Ketentuan Layanan YouTube.
+- Anda bertanggung jawab atas cara penggunaan tool ini.
+
+> 🔄 **Update aplikasi**: cukup jalankan ulang perintah install di atas —
+> versi terbaru akan diunduh ulang, setelan Anda tetap aman.
+
+---
+
 ## 🔁 Versi & Rollback
 
 Proyek ini menggunakan Git tag sebagai titik aman:
 
 - Lihat riwayat commit: `git log --oneline`
-- Kembali ke versi stabil terakhir: `git checkout v1.3.0`
+- Kembali ke versi stabil terakhir: `git checkout v1.4.0`
 - Batalkan commit terakhir: `git revert HEAD`
 - Lihat status file berubah: `git status`
 

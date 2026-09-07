@@ -21,7 +21,7 @@ _STRINGS = {
     # ─── EN ───────────────────────────────────────────────────────────────
     "en": {
         # Header & status bar
-        "header.title": "MINI YOUTUBE DOWNLOADER (v1.4)",
+        "header.title": "MINI YOUTUBE DOWNLOADER (v1.4.1)",
         "header.subtitle": "Video & High-Quality Audio Downloader (MP3 320k, FLAC, M4A, 4K) • Cut per Surah/Chapter",
         "header.credit": "Crafted with care by SnipGeek - https://snipgeek.com/",
         "status.downloads_folder": "Downloads Folder:",
@@ -235,7 +235,7 @@ _STRINGS = {
 
     # ─── ID ───────────────────────────────────────────────────────────────
     "id": {
-        "header.title": "MINI YOUTUBE DOWNLOADER (v1.4)",
+        "header.title": "MINI YOUTUBE DOWNLOADER (v1.4.1)",
         "header.subtitle": "Video & High-Quality Audio Downloader (MP3 320k, FLAC, M4A, 4K) • Potong per Surah/Chapter",
         "header.credit": "Crafted with care by SnipGeek - https://snipgeek.com/",
         "status.downloads_folder": "Folder Downloads:",

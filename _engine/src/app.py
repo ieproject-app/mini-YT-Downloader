@@ -53,7 +53,7 @@ console = Console(force_terminal=True, legacy_windows=False)
 cfg = ConfigManager()
 i18n.set_language(cfg.get("language", "auto"))
 
-APP_VERSION = "1.4.0"
+APP_VERSION = "1.4.1"
 
 # ── Tautan onboarding Gemini API key ──
 AISTUDIO_APIKEY_URL = "https://aistudio.google.com/apikey"

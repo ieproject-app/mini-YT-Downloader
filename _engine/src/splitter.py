@@ -185,8 +185,8 @@ def find_env_file_keys():
 
     Urutan lookup:
       1. Env var GEMINI_API_KEYS / GEMINI_API_KEY
-      2. <repo-mini-yt>/.env dan _engine/.env
-      3. <sibling>/clipforge/.env (opsi (b): pakai key ClipForge yang ada)
+      2. File .env utama (paths.env_file)
+      3. Lokasi legacy portable (repo root, _engine/)
     Return list key (atau []).
     """
     def _parse_env(text):
@@ -206,12 +206,11 @@ def find_env_file_keys():
     if raw:
         return [k.strip() for k in raw.split(",") if k.strip()]
 
-    # Urutan: .env utama (paths) -> legacy portable locations -> sibling clipforge
+    # Urutan: .env utama (paths) -> lokasi legacy portable
     candidates = [
         paths.env_file(),
         paths.ENGINE_DIR.parent / ".env",   # legacy portable (repo root)
         paths.ENGINE_DIR / ".env",          # legacy portable (_engine/)
-        paths.REPO_ROOT.parent / "clipforge" / ".env",  # opsi (b) mesin owner
         Path.cwd() / ".env",
     ]
     seen = set()

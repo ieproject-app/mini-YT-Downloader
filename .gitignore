@@ -12,6 +12,9 @@ _engine/config.json
 .zcode/
 logs/
 
+# Internal planning notes (tidak untuk publik)
+plans/
+
 # API key lokal pengguna (jangan pernah masuk git)
 .env
 .env.local
